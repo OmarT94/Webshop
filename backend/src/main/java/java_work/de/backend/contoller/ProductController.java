@@ -1,5 +1,4 @@
 package java_work.de.backend.contoller;
-
 import java_work.de.backend.model.Product;
 import java_work.de.backend.service.ProductService;
 import org.springframework.web.bind.annotation.*;
@@ -8,17 +7,17 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-public class ProductContoller {
+public class ProductController {
     private final ProductService productService;
 
-    public ProductContoller(ProductService productService) {
+    public ProductController(ProductService productService) {
         this.productService = productService;
     }
 
+    // JEDER DARF LESEN (GET):
     @GetMapping
     public List<Product> getProducts() {
         return productService.findAllProducts();
-
     }
 
     @GetMapping("/{id}")
@@ -26,6 +25,8 @@ public class ProductContoller {
         return productService.findProductById(id);
     }
 
+    // NUR ADMIN DARF:
+    // -> durch die SecurityConfig geregelt
     @PostMapping
     public Product addProduct(@RequestBody Product product) {
         return productService.saveProduct(product);
