@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -22,9 +23,9 @@ public class AdminController {
     }
 
     // Rolle eines Benutzers ändern
-    @PutMapping("/users/{username}/role")
-    public ResponseEntity<String> changeUserRole(@PathVariable String username, @RequestParam String role) {
-        java.util.Optional<User> userOptional = userService.findByUsername(username);
+    @PutMapping("/users/{email}/role")
+    public ResponseEntity<String> changeUserRole(@PathVariable String email, @RequestParam String role) {
+        Optional<User> userOptional = userService.findByEmail(email);
         if (userOptional.isEmpty()) {
             return ResponseEntity.badRequest().body("Benutzer nicht gefunden!");
         }
@@ -37,7 +38,7 @@ public class AdminController {
             User existingUser = userOptional.get();
             User updatedUser = new User(
                     existingUser.id(),
-                    existingUser.username(),
+                    existingUser.email(),
                     existingUser.password(),
                     newRole
             );
@@ -52,15 +53,13 @@ public class AdminController {
         }
     }
 
-    @PutMapping("/users/{username}")
-    public ResponseEntity<String> updateUserDetails(
-            @PathVariable String username,
-            @RequestParam(required = false) String newUsername,
-            @RequestParam(required = false) String newPassword) {
-
+    @PutMapping("/users/{id}/email")
+    public ResponseEntity<String> updateUserEmail(
+            @PathVariable String id,
+            @RequestParam String newEmail) {
         try {
             // Admin ändert die Benutzerdaten eines spezifischen Benutzers
-            userService.updateUserDetails(username, newUsername, newPassword);
+            userService.updateUserEmailByAdmin(id,  newEmail);
             return ResponseEntity.ok("Benutzerdetails erfolgreich aktualisiert!");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

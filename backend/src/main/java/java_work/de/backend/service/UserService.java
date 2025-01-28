@@ -23,69 +23,115 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // 1) loadUserByUsername: Wird von Spring Security beim Login aufgerufen.
+    /**
+     * Wird von Spring Security beim Login aufgerufen.
+     * Hier behandeln wir 'email' als Schlüssel statt 'username'.
+     */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         // Benutzer aus der Datenbank laden
-        User userRecord = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Benutzer nicht gefunden: " + username));
+        User userRecord = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Benutzer nicht gefunden: " + email));
 
         // in ein Spring-Security-UserDetails-Objekt umwandeln
         // userRecord.role() könnte z. B. "ROLE_USER" oder "ROLE_ADMIN" sein
         return org.springframework.security.core.userdetails.User
-                .withUsername(userRecord.username())
-                .password(userRecord.password()) // gehashter Wert
+                .withUsername(userRecord.email())            // E-Mail als "Username" im Security-Kontext
+                .password(userRecord.password())             // gehashter Wert
                 // Spring erwartet die Kurzform der Rolle, z. B. "USER" statt "ROLE_USER"
                 .roles(userRecord.role().name().replace("ROLE_", ""))
                 .build();
     }
 
-    // 2) Benutzer registrieren
-    public void registerUser(String username, String password, User.Role role) {
-        if (userRepository.findByUsername(username).isPresent()) {
-            throw new IllegalArgumentException("Benutzername existiert bereits!");
+    /**
+     * Registrierung eines neuen Benutzers mit E-Mail und Passwort.
+     * Role kann ROLE_USER oder ROLE_ADMIN sein.
+     */
+    public void registerUser(String email, String password, User.Role role) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            // Bessere Fehlermeldung
+            throw new IllegalArgumentException("E-Mail existiert bereits!");
         }
 
         String encryptedPassword = passwordEncoder.encode(password);
         User user = new User(
                 null, // ID durch DB generiert
-                username,
+                email,
                 encryptedPassword,
                 role
         );
         userRepository.save(user);
     }
 
-    // 3) Weitere Methoden (CRUD)
+    /**
+     * Liste aller Benutzer (z. B. für Admin).
+     */
     public List<User> findAllUsers() {
         return userRepository.findAll();
     }
 
-    public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    /**
+     * Einzelnen Benutzer anhand der E-Mail finden.
+     */
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
+    /**
+     * Speichert einen Benutzer-Datensatz direkt (z. B. bei Updates).
+     */
     public void save(User user) {
         userRepository.save(user);
     }
 
+    /**
+     * Löscht einen Benutzer über die ID.
+     */
     public void deleteUserById(String id) {
         userRepository.deleteById(id);
     }
 
-    public void updateUserDetails(String username, String newUsername, String newPassword) {
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isPresent()) {
-            User existingUser = userOptional.get();
-            User updatedUser = new User(
-                    existingUser.id(),
-                    (newUsername != null) ? newUsername : existingUser.username(),
-                    (newPassword != null) ? passwordEncoder.encode(newPassword) : existingUser.password(),
-                    existingUser.role()
-            );
-            userRepository.save(updatedUser);
-        } else {
+    /**
+     * Ein normaler Benutzer kann sein Passwort ändern.
+     * E-Mail bleibt unverändert.
+     */
+    public void updateUserPassword(String email, String newPassword) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
             throw new IllegalArgumentException("Benutzer nicht gefunden!");
         }
+        User existingUser = userOptional.get();
+
+        User updatedUser = new User(
+                existingUser.id(),
+                existingUser.email(), // E-Mail bleibt unverändert
+                (newPassword != null) ? passwordEncoder.encode(newPassword) : existingUser.password(),
+                existingUser.role()
+        );
+        userRepository.save(updatedUser);
+    }
+
+    /**
+     * Nur für Admin: E-Mail eines Benutzers anhand der ID ändern.
+     * Rolle und Passwort bleiben unverändert.
+     */
+    public void updateUserEmailByAdmin(String userId, String newEmail) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("Benutzer nicht gefunden!");
+        }
+        // Prüfen, ob die neue E-Mail bereits existiert
+        if (userRepository.findByEmail(newEmail).isPresent()) {
+            throw new IllegalArgumentException("E-Mail wird bereits verwendet!");
+        }
+
+        User existingUser = userOptional.get();
+        User updatedUser = new User(
+                existingUser.id(),
+                newEmail,
+                existingUser.password(), // Passwort bleibt unverändert
+                existingUser.role()
+        );
+        userRepository.save(updatedUser);
     }
 }

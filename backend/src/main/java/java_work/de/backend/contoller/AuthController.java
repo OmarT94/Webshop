@@ -21,20 +21,21 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
     }
 
+
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestParam String username, @RequestParam String password) {
-        if (userService.findByUsername(username).isPresent()) {
-            return ResponseEntity.badRequest().body("Benutzername existiert bereits!");
+    public ResponseEntity<String> registerUser(@RequestParam String email, @RequestParam String password) {
+        if (userService.findByEmail(email).isPresent()) {
+            return ResponseEntity.badRequest().body("E-Mail existiert bereits!");
         }
         // Standardmäßig als 'USER' registrieren
-        userService.registerUser(username, password, User.Role.ROLE_USER);
+        userService.registerUser(email, password, User.Role.ROLE_USER);
         return ResponseEntity.ok("Registrierung erfolgreich!");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<String> login(@RequestParam String email, @RequestParam String password) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
+                new UsernamePasswordAuthenticationToken(email, password)
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return ResponseEntity.ok("Login erfolgreich!");
@@ -42,15 +43,14 @@ public class AuthController {
 
     @PutMapping("/me")
     public ResponseEntity<String> updateMyDetails(
-            @RequestParam(required = false) String newUsername,
             @RequestParam(required = false) String newPassword) {
 
         // Den aktuell eingeloggten Benutzer aus dem SecurityContext holen
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        String currentEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
         try {
             // Benutzerdaten aktualisieren (nur für den eingeloggten Benutzer)
-            userService.updateUserDetails(currentUsername, newUsername, newPassword);
+            userService.updateUserPassword(currentEmail,newPassword);
             return ResponseEntity.ok("Deine Daten wurden erfolgreich aktualisiert!");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 public record User(
         @Id
         String id,
-        String username,
+        String email,
         String password,
         Role role // ROLE_USER oder ROLE_ADMIN
 )
