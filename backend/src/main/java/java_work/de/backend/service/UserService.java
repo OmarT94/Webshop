@@ -88,10 +88,14 @@ public class UserService implements UserDetailsService {
      * Löscht einen Benutzer über die ID.
      */
     public void deleteUserById(String id) {
+        // Prüfung, ob User existiert
+        if (!userRepository.existsById(id)) {
+            throw new IllegalArgumentException("Benutzer nicht gefunden!");
+        }
         userRepository.deleteById(id);
     }
 
-    /**
+    /*
      * Ein normaler Benutzer kann sein Passwort ändern.
      * E-Mail bleibt unverändert.
      */
@@ -111,7 +115,7 @@ public class UserService implements UserDetailsService {
         userRepository.save(updatedUser);
     }
 
-    /**
+    /*
      * Nur für Admin: E-Mail eines Benutzers anhand der ID ändern.
      * Rolle und Passwort bleiben unverändert.
      */

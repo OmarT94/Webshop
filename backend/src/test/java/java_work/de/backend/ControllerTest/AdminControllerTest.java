@@ -17,8 +17,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf; // <-- wichtig für PUT/POST
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminController.class)
@@ -129,4 +128,45 @@ class AdminControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Benutzer nicht gefunden!"));
     }
+
+    @Test
+    @DisplayName("DELETE /api/admin/users/{id} - als ADMIN => Erfolg (200 OK)")
+    @WithMockUser(roles="ADMIN") // Simuliert Admin
+    void deleteUser_success() throws Exception {
+        // Wir definieren kein spezielles Mock-Verhalten -> userService.deleteUserById(...) wirft keine Exception
+
+        mockMvc.perform(delete("/api/admin/users/123")
+                        .with(csrf()))
+
+                .andExpect(status().isOk())
+                .andExpect(content().string("Benutzerkonto erfolgreich gelöscht!"));
+
+        // Check, ob userService.deleteUserById("123") aufgerufen wurde
+        verify(userService).deleteUserById("123");
+    }
+
+    @Test
+    @DisplayName("DELETE /api/admin/users/{id} - Benutzer nicht existiert => 400 Bad Request")
+    @WithMockUser(roles="ADMIN")
+    void deleteUser_notFound() throws Exception {
+        // Simuliere, dass userService.deleteUserById("999") eine IllegalArgumentException wirft
+        doThrow(new IllegalArgumentException("Benutzer nicht gefunden!"))
+                .when(userService).deleteUserById("999");
+        mockMvc.perform(delete("/api/admin/users/999")
+                .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Fehler beim Löschen: Benutzer nicht gefunden!"));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/admin/users/{id} - Kein Admin => 403 Forbidden")
+    void deleteUser_forbidden() throws Exception {
+        // Kein @WithMockUser(roles="ADMIN"), also normaler User oder Anonymous => 403
+        mockMvc.perform(delete("/api/admin/users/123"))
+                .andExpect(status().isForbidden());
+
+        // userService.deleteUserById() sollte NICHT aufgerufen werden
+        verify(userService, never()).deleteUserById("123");
+    }
+
 }

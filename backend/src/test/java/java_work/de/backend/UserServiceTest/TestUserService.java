@@ -4,6 +4,7 @@ import java_work.de.backend.model.User;
 import java_work.de.backend.repo.UserRepository;
 import java_work.de.backend.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -94,6 +95,37 @@ public class TestUserService {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> userService.updateUserPassword("unknown@example.com", "secret"));
+    }
+
+    @Test
+    @DisplayName("deleteUserById: Löscht erfolgreich, wenn User existiert")
+    void deleteUserById_success() {
+        // Arrange
+        // Wir simulieren, dass ein Datensatz existiert
+        String userId = "123";
+        when(userRepository.existsById(userId)).thenReturn(true);
+
+        // Act
+        userService.deleteUserById(userId);
+
+        // Assert
+        // Check, ob userRepository.deleteById(...) aufgerufen wurde
+        verify(userRepository, times(1)).deleteById(userId);
+    }
+
+    @Test
+    @DisplayName("deleteUserById: Wirft Exception, wenn User nicht existiert")
+    void deleteUserById_notFound() {
+        // Arrange
+        String userId = "999";
+        when(userRepository.existsById(userId)).thenReturn(false);
+
+        // Act & Assert
+        // Wir erwarten eine IllegalArgumentException
+        assertThrows(IllegalArgumentException.class, () -> userService.deleteUserById(userId));
+
+        // Check, dass deleteById(...) NICHT aufgerufen wurde
+        verify(userRepository, never()).deleteById(userId);
     }
 
 }

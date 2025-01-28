@@ -66,4 +66,14 @@ public class AdminController {
         }
     }
 
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable String id) {
+        try {
+            userService.deleteUserById(id);
+            return ResponseEntity.ok("Benutzerkonto erfolgreich gelöscht!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Fehler beim Löschen: " + e.getMessage());
+        }
+    }
+
 }
