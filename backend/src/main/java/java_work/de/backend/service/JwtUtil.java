@@ -12,10 +12,6 @@ import static javax.crypto.Cipher.SECRET_KEY;
 @Service
 public class JwtUtil {
 
-    // Geheimer Schlüssel für die Signierung des Tokens
-    private final String SECRET_KEY = "geheimesPasswort";
-
-
     /*
      * → Erstellt ein JWT-Token mit Benutzer-E-Mail & Rolle.
      */
@@ -25,7 +21,7 @@ public class JwtUtil {
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 Stunden gültig
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .signWith(JwtConfig.SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -36,7 +32,7 @@ public class JwtUtil {
     public String validateToken(String token) {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(SECRET_KEY)
+                    .setSigningKey(JwtConfig.SECRET_KEY)
                     .build()
                     .parseClaimsJws(token)
                     .getBody()
