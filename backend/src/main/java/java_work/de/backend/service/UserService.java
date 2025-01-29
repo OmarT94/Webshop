@@ -77,14 +77,14 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email);
     }
 
-    /**
+    /*
      * Speichert einen Benutzer-Datensatz direkt (z. B. bei Updates).
      */
     public void save(User user) {
         userRepository.save(user);
     }
 
-    /**
+    /*
      * Löscht einen Benutzer über die ID.
      */
     public void deleteUserById(String id) {

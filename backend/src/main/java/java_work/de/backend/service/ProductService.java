@@ -5,6 +5,7 @@ import java_work.de.backend.repo.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class ProductService {
@@ -19,7 +20,9 @@ private final ProductRepository productRepo;
     }
 
     public Product findProductById(String id) {
-        return productRepo.findById(id).orElseThrow();
+        return productRepo.findById(id)
+                .orElseThrow(()
+        -> new NoSuchElementException("Kein Produkt mit ID " + id + " gefunden!"));
     }
 
     public Product saveProduct(Product product) {
