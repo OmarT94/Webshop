@@ -24,21 +24,25 @@ brauchen wir einen Filter, der bei jeder Anfrage den Token prüft.
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final ApplicationContext applicationContext;
-    private UserService userService; // Lazy-Loading
     private final UserDetailsService userDetailsService;
+    private final ApplicationContext applicationContext;  // <--- Feld hinzufügen
 
-    public JwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService, ApplicationContext applicationContext) {
+    private UserService userService; // Lazy-Loading
+
+    public JwtAuthFilter(JwtUtil jwtUtil,
+                         UserDetailsService userDetailsService,
+                         ApplicationContext applicationContext) {
         this.jwtUtil = jwtUtil;
-        this.applicationContext = applicationContext;
         this.userDetailsService = userDetailsService;
+        this.applicationContext = applicationContext;      // <--- Im Konstruktor zuweisen
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain)
             throws ServletException, IOException {
 
-        // Token aus dem Authorization-Header holen
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             chain.doFilter(request, response);
@@ -54,8 +58,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 userService = applicationContext.getBean(UserService.class);
             }
 
-            UserDetails userDetails = new User(email, "", Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")));
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            UserDetails userDetails = new User(
+                    email,
+                    "",
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))
+            );
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities()
+                    );
             SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 

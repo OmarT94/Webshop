@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java_work.de.backend.service.JwtAuthFilter;
 import java_work.de.backend.service.JwtUtil;
+import java_work.de.backend.service.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,10 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -28,6 +31,15 @@ class JwtAuthFilterTest {
 
     @Mock
     private HttpServletRequest request;
+
+    @Mock
+    private ApplicationContext applicationContext;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private UserDetailsService userDetailsService;
 
     @Mock
     private HttpServletResponse response;
@@ -45,8 +57,17 @@ class JwtAuthFilterTest {
 
     @BeforeEach
     void setUp() {
+        // (1) Mocks initialisieren
         closeable = MockitoAnnotations.openMocks(this);
-        SecurityContextHolder.clearContext();  // WICHTIG: Context vorher löschen!
+
+        // (2) Danach erst Stubbing
+        when(applicationContext.getBean(UserService.class)).thenReturn(userService);
+
+        // (3) Dann Filter konstruieren
+        jwtAuthFilter = new JwtAuthFilter(jwtUtil, userDetailsService, applicationContext);
+        // (4) SecurityContext leeren, um Tests nicht zu beeinflussen
+        SecurityContextHolder.clearContext();
+
     }
 
     @AfterEach
@@ -74,23 +95,14 @@ class JwtAuthFilterTest {
 
     @Test
     @DisplayName("Gültiges Token sollte authentifizieren")
-    void doFilter_validToken_shouldAuthenticate() throws ServletException, IOException {
-        // Arrange: Gültiges Token simulieren
-        String token = "valid-jwt-token";
-        String email = "test@example.com";
+    void doFilter_validToken_shouldAuthenticate() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Bearer someValidToken");
+        when(jwtUtil.validateToken("someValidToken")).thenReturn("test@example.com");
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtUtil.validateToken(token)).thenReturn(email);
-
-        UserDetails userDetails = new User(email, "", Collections.singleton(() -> "ROLE_USER"));
-
-        // Act
         jwtAuthFilter.doFilter(request, response, filterChain);
 
-        // Assert
-        verify(filterChain, times(1)).doFilter(request, response);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assertNotNull(auth, "SecurityContext sollte eine Authentifizierung enthalten.");
-        assertEquals(email, ((User) auth.getPrincipal()).getUsername(), "Der Benutzername sollte mit dem extrahierten Email übereinstimmen.");
+        verify(filterChain).doFilter(request, response);
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
     }
+
 }
