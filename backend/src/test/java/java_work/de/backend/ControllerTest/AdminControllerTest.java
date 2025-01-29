@@ -2,6 +2,7 @@ package java_work.de.backend.ControllerTest;
 
 import java_work.de.backend.contoller.AdminController;
 import java_work.de.backend.model.User;
+import java_work.de.backend.service.JwtUtil;
 import java_work.de.backend.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,12 +17,14 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf; // <-- wichtig für PUT/POST
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminController.class)
 class AdminControllerTest {
+    @MockBean
+    JwtUtil jwtUtil;  // Mocking für JwtUtil, um Fehler zu vermeiden
 
     @Autowired
     MockMvc mockMvc;
@@ -30,10 +33,9 @@ class AdminControllerTest {
     UserService userService;
 
     @Test
-    @DisplayName("GET /api/admin/users - als ADMIN erfolgreich (200 OK) - liefert Liste")
-    @WithMockUser(roles = "ADMIN")  // Simuliert, dass wir als Admin eingeloggt sind
+    @DisplayName("GET /api/admin/users - als ADMIN erfolgreich (200 OK)")
+    @WithMockUser(username = "admin@example.com", roles = "ADMIN") // Sicherstellen, dass Admin-Rolle gesetzt ist
     void getAllUsers_success() throws Exception {
-        // Mock-Verhalten definieren: userService.findAllUsers() -> Liste mit 2 Usern zurückgeben
         List<User> mockUsers = List.of(
                 new User("1", "alice@example.com", "pwHash", User.Role.ROLE_USER),
                 new User("2", "admin@example.com", "pwHash", User.Role.ROLE_ADMIN)
@@ -43,82 +45,69 @@ class AdminControllerTest {
         mockMvc.perform(get("/api/admin/users"))
                 .andExpect(status().isOk());
 
-        verify(userService).findAllUsers(); // überprüft, ob Service aufgerufen wurde
+        verify(userService).findAllUsers();
     }
-
 
     @Test
     @DisplayName("PUT /api/admin/users/{email}/role - Rolle erfolgreich geändert")
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void changeUserRole_success() throws Exception {
-        // Angegebener User ist vorhanden
         User existingUser = new User("abc", "bob@example.com", "pwHash", User.Role.ROLE_USER);
         when(userService.findByEmail("bob@example.com")).thenReturn(Optional.of(existingUser));
 
         mockMvc.perform(put("/api/admin/users/bob@example.com/role")
-                        .with(csrf()) // PUT => CSRF
-                        .param("role", "ROLE_ADMIN")
-                )
+                        .with(csrf()) // PUT benötigt CSRF
+                        .param("role", "ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Rolle erfolgreich geändert!"));
 
-        // Prüfen, ob userService.save(...) aufgerufen wurde
         verify(userService).save(any(User.class));
     }
 
     @Test
-    @DisplayName("PUT /api/admin/users/{email}/role - Benutzer nicht gefunden => 400")
-    @WithMockUser(roles = "ADMIN")
+    @DisplayName("PUT /api/admin/users/{email}/role - Benutzer nicht gefunden (400)")
+    @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void changeUserRole_userNotFound() throws Exception {
-        // userService.findByEmail(...) -> empty
         when(userService.findByEmail("unknown@example.com")).thenReturn(Optional.empty());
 
         mockMvc.perform(put("/api/admin/users/unknown@example.com/role")
                         .with(csrf())
-                        .param("role", "ROLE_ADMIN")
-                )
+                        .param("role", "ROLE_ADMIN"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Benutzer nicht gefunden!"));
     }
 
     @Test
-    @DisplayName("PUT /api/admin/users/{email}/role - Ungültige Rolle => 400")
-    @WithMockUser(roles = "ADMIN")
+    @DisplayName("PUT /api/admin/users/{email}/role - Ungültige Rolle (400)")
+    @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void changeUserRole_invalidRole() throws Exception {
         User existingUser = new User("abc", "bob@example.com", "pwHash", User.Role.ROLE_USER);
         when(userService.findByEmail("bob@example.com")).thenReturn(Optional.of(existingUser));
 
-        // param("role", "ROLE_PINEAPPLE") => wirft Exception in valueOf()
         mockMvc.perform(put("/api/admin/users/bob@example.com/role")
                         .with(csrf())
-                        .param("role", "ROLE_Tester") // Ungültig
-                )
+                        .param("role", "ROLE_INVALID")) // Ungültige Rolle
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Ungültige Rolle! Verfügbare Rollen: ROLE_ADMIN, ROLE_USER"));
     }
 
     @Test
-    @DisplayName("PUT /api/admin/users/{id}/email - erfolgreich E-Mail geändert")
-    @WithMockUser(roles = "ADMIN")
+    @DisplayName("PUT /api/admin/users/{id}/email - Erfolgreiche Änderung")
+    @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void updateUserEmail_success() throws Exception {
-        // userService.updateUserEmailByAdmin(...) wirft keine Exception
-        // => wir definieren kein spezielles when(...) => default: no exception
-
         mockMvc.perform(put("/api/admin/users/123/email")
                         .with(csrf())
                         .param("newEmail", "alice@new.com"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Benutzerdetails erfolgreich aktualisiert!"));
 
-        // Prüfen, ob userService aufgerufen wurde
         verify(userService).updateUserEmailByAdmin("123", "alice@new.com");
     }
 
     @Test
-    @DisplayName("PUT /api/admin/users/{id}/email - Benutzer nicht gefunden => 400")
-    @WithMockUser(roles = "ADMIN")
+    @DisplayName("PUT /api/admin/users/{id}/email - Benutzer nicht gefunden (400)")
+    @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void updateUserEmail_userNotFound() throws Exception {
-        // userService.updateUserEmailByAdmin(...) => wirf IllegalArgumentException
         doThrow(new IllegalArgumentException("Benutzer nicht gefunden!"))
                 .when(userService).updateUserEmailByAdmin("999", "bob@new.com");
 
@@ -130,43 +119,36 @@ class AdminControllerTest {
     }
 
     @Test
-    @DisplayName("DELETE /api/admin/users/{id} - als ADMIN => Erfolg (200 OK)")
-    @WithMockUser(roles="ADMIN") // Simuliert Admin
+    @DisplayName("DELETE /api/admin/users/{id} - Erfolgreiche Löschung (200 OK)")
+    @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void deleteUser_success() throws Exception {
-        // Wir definieren kein spezielles Mock-Verhalten -> userService.deleteUserById(...) wirft keine Exception
-
         mockMvc.perform(delete("/api/admin/users/123")
                         .with(csrf()))
-
                 .andExpect(status().isOk())
                 .andExpect(content().string("Benutzerkonto erfolgreich gelöscht!"));
 
-        // Check, ob userService.deleteUserById("123") aufgerufen wurde
         verify(userService).deleteUserById("123");
     }
 
     @Test
-    @DisplayName("DELETE /api/admin/users/{id} - Benutzer nicht existiert => 400 Bad Request")
-    @WithMockUser(roles="ADMIN")
+    @DisplayName("DELETE /api/admin/users/{id} - Benutzer nicht gefunden (400)")
+    @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void deleteUser_notFound() throws Exception {
-        // Simuliere, dass userService.deleteUserById("999") eine IllegalArgumentException wirft
         doThrow(new IllegalArgumentException("Benutzer nicht gefunden!"))
                 .when(userService).deleteUserById("999");
+
         mockMvc.perform(delete("/api/admin/users/999")
-                .with(csrf()))
+                        .with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Fehler beim Löschen: Benutzer nicht gefunden!"));
     }
 
     @Test
-    @DisplayName("DELETE /api/admin/users/{id} - Kein Admin => 403 Forbidden")
+    @DisplayName("DELETE /api/admin/users/{id} - Kein Admin (403 Forbidden)")
     void deleteUser_forbidden() throws Exception {
-        // Kein @WithMockUser(roles="ADMIN"), also normaler User oder Anonymous => 403
         mockMvc.perform(delete("/api/admin/users/123"))
                 .andExpect(status().isForbidden());
 
-        // userService.deleteUserById() sollte NICHT aufgerufen werden
         verify(userService, never()).deleteUserById("123");
     }
-
 }

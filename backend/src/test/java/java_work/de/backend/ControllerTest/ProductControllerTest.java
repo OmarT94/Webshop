@@ -3,6 +3,7 @@ package java_work.de.backend.ControllerTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java_work.de.backend.contoller.ProductController;
 import java_work.de.backend.model.Product;
+import java_work.de.backend.service.JwtUtil;
 import java_work.de.backend.service.ProductService;
 import java_work.de.backend.service.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
@@ -24,6 +26,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ProductController.class)
 @Import(SecurityConfig.class) // Ladet deine echte SecurityConfig
 class ProductControllerTest {
+
+
+    @MockBean
+    private JwtUtil jwtUtil;
+    @MockBean
+    private UserDetailsService userDetailsService;
 
     @Autowired
     private MockMvc mockMvc;

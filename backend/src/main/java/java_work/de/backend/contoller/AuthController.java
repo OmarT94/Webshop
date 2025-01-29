@@ -7,8 +7,10 @@ import java_work.de.backend.dto.UserRegistrationDTO;
 import java_work.de.backend.model.User;
 import java_work.de.backend.service.JwtUtil;
 import java_work.de.backend.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,6 +43,14 @@ public class AuthController {
         userService.registerUser(dto.email(), dto.password(), User.Role.ROLE_USER);
         return ResponseEntity.ok("Registrierung erfolgreich!");
     }
+//@PostMapping("/registerAdmin")
+//public ResponseEntity<String> registerAdmin(@Valid @RequestBody UserRegistrationDTO dto) {
+//    if (userService.findByEmail(dto.email()).isPresent()) {
+//        return ResponseEntity.badRequest().body("E-Mail existiert bereits!");
+//    }
+//    userService.registerUser(dto.email(), dto.password(), User.Role.ROLE_ADMIN);
+//    return ResponseEntity.ok("Admin Registrierung erfolgreich!");
+//}
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody UserLoginDTO dto) {
@@ -64,6 +74,17 @@ public class AuthController {
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
         return ResponseEntity.ok(response);
+    }
+
+    //BadCredentialsException ist eine Exception in Spring Security, die geworfen wird,
+    // wenn die Anmeldeinformationen (Benutzername/Passwort) ungültig sind.
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED) // 👈 Gibt jetzt 401 zurück
+    public ResponseEntity<Map<String, String>> handleBadCredentials(BadCredentialsException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Falsche Anmeldedaten");
+        response.put("status", "401");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
 

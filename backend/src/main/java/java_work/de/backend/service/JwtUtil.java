@@ -7,35 +7,36 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+import static javax.crypto.Cipher.SECRET_KEY;
+
 @Service
 public class JwtUtil {
 
     // Geheimer Schlüssel für die Signierung des Tokens
-    private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final String SECRET_KEY = "geheimesPasswort";
 
-    // Token-Gültigkeitsdauer (1 Tag)
-    private final long EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
     /*
-     * Erstellt ein JWT-Token für einen Benutzer.
+     * → Erstellt ein JWT-Token mit Benutzer-E-Mail & Rolle.
      */
-    public String generateToken(String email, String role) {
+    public String generateToken(String username, String role) {
         return Jwts.builder()
-                .setSubject(email)
-                .claim("role", role) // Benutzerrolle als Claim speichern
+                .setSubject(username)
+                .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(secretKey)
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 Stunden gültig
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
 
+
     /*
-     * Validiert ein JWT-Token und gibt die E-Mail aus dem Payload zurück.
+     * prüft das Token gültig ist und gibt die Benutzer-E-Mail zurück.
      */
     public String validateToken(String token) {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
+                    .setSigningKey(SECRET_KEY)
                     .build()
                     .parseClaimsJws(token)
                     .getBody()

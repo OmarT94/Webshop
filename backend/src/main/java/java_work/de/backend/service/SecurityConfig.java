@@ -1,19 +1,26 @@
 package java_work.de.backend.service;
 
+import org.apache.el.parser.Token;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
 
+    private final JwtAuthFilter jwtAuthFilter;
 
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -21,7 +28,7 @@ public class SecurityConfig {
                 .csrf().disable()   // CSRF-Schutz ausschalten
                 .authorizeHttpRequests(auth -> auth
                         // Authentifizierung für Auth-Routen erlauben
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll() // Authentifizierung offen für alle
                         // Admin-Endpunkte
                        // .requestMatchers("/api/products/**").permitAll()   all users can add/delete/update
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -35,7 +42,9 @@ public class SecurityConfig {
 
                         // Alle anderen Endpunkte benötigen eine Authentifizierung
                         .anyRequest().authenticated()
+
                 )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic();
 
         return http.build();
