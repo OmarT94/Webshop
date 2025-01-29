@@ -14,8 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class TestUserService {
@@ -126,6 +125,26 @@ public class TestUserService {
 
         // Check, dass deleteById(...) NICHT aufgerufen wurde
         verify(userRepository, never()).deleteById(userId);
+    }
+
+    @Test
+    void findByEmail_shouldReturnUser_whenUserExists() {
+        User user = new User("1", "test@example.com", "password", User.Role.ROLE_USER);
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+
+        Optional<User> result = userService.findByEmail("test@example.com");
+
+        assertTrue(result.isPresent());
+        assertEquals("test@example.com", result.get().email());
+    }
+
+    @Test
+    void findByEmail_shouldReturnEmpty_whenUserDoesNotExist() {
+        when(userRepository.findByEmail("notfound@example.com")).thenReturn(Optional.empty());
+
+        Optional<User> result = userService.findByEmail("notfound@example.com");
+
+        assertFalse(result.isPresent());
     }
 
 }

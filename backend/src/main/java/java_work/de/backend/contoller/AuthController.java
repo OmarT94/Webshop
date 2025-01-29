@@ -5,13 +5,18 @@ import java_work.de.backend.dto.UserLoginDTO;
 import java_work.de.backend.dto.UserPasswordUpdateDTO;
 import java_work.de.backend.dto.UserRegistrationDTO;
 import java_work.de.backend.model.User;
+import java_work.de.backend.service.JwtUtil;
 import java_work.de.backend.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -19,10 +24,11 @@ public class AuthController {
 
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
-
-    public AuthController(UserService userService, AuthenticationManager authenticationManager) {
+    private final JwtUtil jwtUtil;
+    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
 
@@ -37,13 +43,29 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody UserLoginDTO dto) {
+    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody UserLoginDTO dto) {
+        // Benutzer authentifizieren
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.email(), dto.password())
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return ResponseEntity.ok("Login erfolgreich!");
+
+        // Benutzerinformationen aus Authentication-Objekt abrufen
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        // Benutzer aus der Datenbank holen, um die Rolle zu erhalten
+        User user = userService.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
+
+        // JWT-Token erstellen
+        String token = jwtUtil.generateToken(user.email(), user.role().name());
+
+        // Antwort mit Token zurückgeben (als JSON-Objekt)
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+        return ResponseEntity.ok(response);
     }
+
 
     @PutMapping("/me")
     public ResponseEntity<String> updateMyDetails(

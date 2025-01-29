@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -57,6 +58,17 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("Registrierung erfolgreich!"));
     }
+    @Test
+    void register_shouldReturnBadRequest_whenEmailIsInvalid() throws Exception {
+        UserRegistrationDTO dto = new UserRegistrationDTO("invalid-email", "pass");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+
 
     @Test
     void register_error_emailExists() throws Exception {
