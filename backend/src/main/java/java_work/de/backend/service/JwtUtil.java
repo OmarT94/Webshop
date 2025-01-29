@@ -1,13 +1,8 @@
 package java_work.de.backend.service;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
 import java.util.Date;
-
-import static javax.crypto.Cipher.SECRET_KEY;
 
 @Service
 public class JwtUtil {

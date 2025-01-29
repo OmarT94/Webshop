@@ -4,17 +4,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java_work.de.backend.service.JwtUtil;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 
 import java.io.IOException;
 import java.util.Collections;
@@ -24,14 +21,16 @@ Damit Spring Security JWT automatisch verarbeitet,
 brauchen wir einen Filter, der bei jeder Anfrage den Token prüft.
 */
 
-@Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final ApplicationContext applicationContext;
+    private UserService userService; // Lazy-Loading
     private final UserDetailsService userDetailsService;
 
-    public JwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+    public JwtAuthFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService, ApplicationContext applicationContext) {
         this.jwtUtil = jwtUtil;
+        this.applicationContext = applicationContext;
         this.userDetailsService = userDetailsService;
     }
 
@@ -50,6 +49,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String email = jwtUtil.validateToken(token);
 
         if (email != null) {
+            // Lazy-Loading von UserService, um Circular Dependency zu vermeiden
+            if (userService == null) {
+                userService = applicationContext.getBean(UserService.class);
+            }
+
             UserDetails userDetails = new User(email, "", Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")));
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authToken);
@@ -57,6 +61,4 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         chain.doFilter(request, response);
     }
-
-
 }

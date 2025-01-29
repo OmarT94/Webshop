@@ -21,8 +21,14 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage()));
+
+        if (ex.getBindingResult() != null) { // Schutz vor NullPointerException
+            ex.getBindingResult().getFieldErrors().forEach(error ->
+                    errors.put(error.getField(), error.getDefaultMessage())
+            );
+        } else {
+            errors.put("error", "Validierungsfehler, aber keine Details verfügbar.");
+        }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
