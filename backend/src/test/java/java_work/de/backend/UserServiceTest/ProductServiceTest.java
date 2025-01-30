@@ -1,5 +1,6 @@
 package java_work.de.backend.UserServiceTest;
 
+import java_work.de.backend.dto.ProductDTO;
 import java_work.de.backend.model.Product;
 import java_work.de.backend.repo.ProductRepository;
 import java_work.de.backend.service.ProductService;
@@ -30,7 +31,7 @@ class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("findAllProducts: gibt Liste aller Produkte zurück")
+    @DisplayName("findAllProducts: gibt Liste aller Produkte als DTO zurück")
     void testFindAllProducts() {
         // Arrange: Wir simulieren, dass das Repo zwei Produkte liefert
         Product p1 = new Product("1", "Laptop", "Desc1", 999.99, 10,"testImage");
@@ -38,7 +39,7 @@ class ProductServiceTest {
         when(productRepository.findAll()).thenReturn(List.of(p1, p2));
 
         // Act
-        List<Product> result = productService.findAllProducts();
+        List<ProductDTO> result = productService.findAllProducts();
 
         // Assert
         assertEquals(2, result.size());
@@ -46,14 +47,14 @@ class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("findProductById: Produkt gefunden")
+    @DisplayName("findProductById: Produkt als DTO gefunden")
     void testFindProductById_found() {
         // Arrange
         Product p = new Product("1", "Laptop", "Desc1", 999.99, 10,"testImage");
         when(productRepository.findById("1")).thenReturn(Optional.of(p));
 
         // Act
-        Product result = productService.findProductById("1");
+        ProductDTO result = productService.findProductById("1");
 
         // Assert
         assertNotNull(result);
@@ -72,36 +73,42 @@ class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("saveProduct: Produkt speichern")
+    @DisplayName("saveProduct: ProduktDTO speichern und als DTO zurückgeben")
     void testSaveProduct() {
         // Arrange
-        Product p = new Product(null, "Laptop", "Desc", 999.99, 10,"testImage");
+        ProductDTO  p = new ProductDTO (null, "Laptop", "Desc", 999.99, 10,"testImage");
         // Wir simulieren, dass das Repo ein Objekt mit generierter ID zurückgibt
-        Product saved = new Product("1", "Laptop", "Desc", 999.99, 10,"testImage");
-        when(productRepository.save(p)).thenReturn(saved);
+        Product  saved = new Product ("1", "Laptop", "Desc", 999.99, 10,"testImage");
+        when(productRepository.save(any(Product.class))).thenReturn(saved);
 
         // Act
-        Product result = productService.saveProduct(p);
+        ProductDTO result = productService.saveProduct(p);
 
         // Assert
 
-        verify(productRepository, times(1)).save(p);
+        assertNotNull(result);
+        verify(productRepository, times(1)).save(any(Product.class));
     }
 
     @Test
-    @DisplayName("updateProduct: bestehendes Produkt aktualisieren")
+    @DisplayName("updateProduct: bestehendes Produkt aktualisieren und als DTO zurückgeben")
     void testUpdateProduct() {
         // Arrange
         Product existing = new Product("1", "Laptop", "OldDesc", 999.99, 10,"testImage");
         Product updated = new Product("1", "Laptop", "NewDesc", 1099.99, 8,"testImage");
-        when(productRepository.save(existing)).thenReturn(updated);
+        when(productRepository.findById("1")).thenReturn(Optional.of(existing));
+        when(productRepository.save(any(Product.class))).thenReturn(updated);
 
+        ProductDTO updateDTO = new ProductDTO("1", "Laptop", "NewDesc", 1099.99, 8, "testImage");
         // Act
-        Product result = productService.updateProduct(existing);
+        ProductDTO result = productService.updateProduct("1",updateDTO);
 
         // Assert
-
-        verify(productRepository, times(1)).save(existing);
+        assertNotNull(result);
+        assertEquals("NewDesc", result.description());
+        assertEquals(1099.99, result.price());
+        verify(productRepository, times(1)).findById("1");
+        verify(productRepository, times(1)).save(any(Product.class));
     }
 
     @Test

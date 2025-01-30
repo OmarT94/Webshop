@@ -2,6 +2,7 @@ package java_work.de.backend.ControllerTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java_work.de.backend.contoller.ProductController;
+import java_work.de.backend.dto.ProductDTO;
 import java_work.de.backend.model.Product;
 import java_work.de.backend.service.JwtUtil;
 import java_work.de.backend.service.ProductService;
@@ -46,15 +47,16 @@ class ProductControllerTest {
     @DisplayName("GET /api/products - jeder darf lesen => 200 OK")
     void getAllProducts_success() throws Exception {
         // Mock: productService.findAllProducts() => Liste
-        List<Product> mockProducts = List.of(
-                new Product("1", "Laptop", "Desc", 999.99, 5,"testImage"),
-                new Product("2", "Smartphone", "Desc2", 499.99, 2,"testImage")
+        List<ProductDTO> mockProducts = List.of(
+                new ProductDTO("1", "Laptop", "Desc", 999.99, 5,"testImage"),
+                new ProductDTO("2", "Smartphone", "Desc2", 499.99, 2,"testImage")
         );
         when(productService.findAllProducts()).thenReturn(mockProducts);
 
         mockMvc.perform(get("/api/products"))
                 .andExpect(status().isOk())
-        ;
+                .andExpect(jsonPath("$.length()").value(2));
+
 
         verify(productService, times(1)).findAllProducts();
     }
@@ -62,7 +64,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("GET /api/products/{id} - jeder darf lesen => 200 OK")
     void getProduct_success() throws Exception {
-        Product mockProd = new Product("1", "Laptop", "Desc", 999.99, 5,"testImage");
+        ProductDTO mockProd = new  ProductDTO("1", "Laptop", "Desc", 999.99, 5,"testImage");
         when(productService.findProductById("1")).thenReturn(mockProd);
 
         mockMvc.perform(get("/api/products/1"))
@@ -78,10 +80,10 @@ class ProductControllerTest {
     @WithMockUser(roles = "ADMIN")  // Admin darf
     void addProduct_admin_success() throws Exception {
         // Angelegtes Produkt
-        Product inputProd = new Product(null, "Laptop", "Desc", 999.99, 5,"testImage");
+        ProductDTO inputProd = new  ProductDTO(null, "Laptop", "Desc", 999.99, 5,"testImage");
         // Service gibt Produkt mit generierter ID zurück
-        Product savedProd = new Product("123", "Laptop", "Desc", 999.99, 5,"testImage");
-        when(productService.saveProduct(any(Product.class))).thenReturn(savedProd);
+        ProductDTO savedProd = new  ProductDTO("123", "Laptop", "Desc", 999.99, 5,"testImage");
+        when(productService.saveProduct(any( ProductDTO.class))).thenReturn(savedProd);
 
         // JSON des inputProd
         String prodJson = objectMapper.writeValueAsString(inputProd);
@@ -94,14 +96,14 @@ class ProductControllerTest {
                 .andExpect(status().isOk())
         // optional: .andExpect(jsonPath("$.id").value("123"))
         ;
-        verify(productService).saveProduct(any(Product.class));
+        verify(productService).saveProduct(any( ProductDTO.class));
     }
 
     @Test
     @DisplayName("POST /api/products - als USER => 403 Forbidden")
     @WithMockUser(roles = "USER")
     void addProduct_user_forbidden() throws Exception {
-        Product inputProd = new Product(null, "Laptop", "Desc", 999.99, 5,"testImage");
+        ProductDTO inputProd = new  ProductDTO(null, "Laptop", "Desc", 999.99, 5,"testImage");
         String prodJson = new ObjectMapper().writeValueAsString(inputProd);
 
         mockMvc.perform(post("/api/products")
@@ -116,8 +118,8 @@ class ProductControllerTest {
     @DisplayName("PUT /api/products/{id} - nur ADMIN => 200 OK")
     @WithMockUser(roles = "ADMIN")
     void updateProduct_admin_success() throws Exception {
-        Product updated = new Product("1", "Laptop Updated", "Desc2", 1099.99, 4,"testImage");
-        when(productService.updateProduct(any(Product.class))).thenReturn(updated);
+        ProductDTO updated = new  ProductDTO("1", "Laptop Updated", "Desc2", 1099.99, 4,"testImage");
+        when(productService.updateProduct(eq("1"),any( ProductDTO.class))).thenReturn(updated);
 
         // JSON
         String updatedJson = objectMapper.writeValueAsString(updated);
@@ -125,11 +127,10 @@ class ProductControllerTest {
         mockMvc.perform(put("/api/products/1")
                         .contentType("application/json")
                         .content(updatedJson)
-                        .with(csrf())
-
-                )
-                .andExpect(status().isOk());
-        verify(productService).updateProduct(any(Product.class));
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Laptop Updated"));
+        verify(productService).updateProduct(eq("1"),any( ProductDTO.class));
     }
 
     @Test
