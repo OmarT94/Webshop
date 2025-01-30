@@ -39,8 +39,11 @@ public class AuthController {
         if (userService.findByEmail(dto.email()).isPresent()) {
             return ResponseEntity.badRequest().body("E-Mail existiert bereits!");
         }
-        // Standardmäßig als 'USER' registrieren
-        userService.registerUser(dto.email(), dto.password(), User.Role.ROLE_USER);
+        // Falls keine Rolle gesendet wird, Standard: ROLE_USER
+        User.Role userRole = (dto.role() != null && dto.role().equalsIgnoreCase("ROLE_ADMIN"))
+                ? User.Role.ROLE_ADMIN
+                : User.Role.ROLE_USER;
+        userService.registerUser(dto.email(), dto.password(), userRole);
         return ResponseEntity.ok("Registrierung erfolgreich!");
     }
 //@PostMapping("/registerAdmin")
@@ -68,7 +71,7 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
 
         // JWT-Token erstellen
-        String token = jwtUtil.generateToken(user.email(), user.role().name());
+        String token = jwtUtil.generateToken(user.email(), user.role());
 
         // Antwort mit Token zurückgeben (als JSON-Objekt)
         Map<String, String> response = new HashMap<>();

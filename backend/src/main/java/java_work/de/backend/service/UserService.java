@@ -23,7 +23,7 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
+    /*
      * Wird von Spring Security beim Login aufgerufen.
      * Hier behandeln wir 'email' als Schlüssel statt 'username'.
      */
@@ -43,15 +43,16 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    /**
+    /*
      * Registrierung eines neuen Benutzers mit E-Mail und Passwort.
      * Role kann ROLE_USER oder ROLE_ADMIN sein.
      */
-    public void registerUser(String email, String password, User.Role role) {
+    public User registerUser(String email, String password, User.Role role) {
+        // Überprüfen, ob die E-Mail bereits existiert
         if (userRepository.findByEmail(email).isPresent()) {
-            // Bessere Fehlermeldung
-            throw new IllegalArgumentException("E-Mail existiert bereits!");
+            throw new IllegalArgumentException("Ein Benutzer mit dieser E-Mail existiert bereits!");
         }
+
 
         String encryptedPassword = passwordEncoder.encode(password);
         User user = new User(
@@ -60,17 +61,17 @@ public class UserService implements UserDetailsService {
                 encryptedPassword,
                 role
         );
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
-    /**
+    /*
      * Liste aller Benutzer (z. B. für Admin).
      */
     public List<User> findAllUsers() {
         return userRepository.findAll();
     }
 
-    /**
+    /*
      * Einzelnen Benutzer anhand der E-Mail finden.
      */
     public Optional<User> findByEmail(String email) {
@@ -80,7 +81,7 @@ public class UserService implements UserDetailsService {
     /*
      * Speichert einen Benutzer-Datensatz direkt (z. B. bei Updates).
      */
-    public void save(User user) {
+    public void saveUser(User user) {
         userRepository.save(user);
     }
 

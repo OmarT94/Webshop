@@ -51,25 +51,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
         String email = jwtUtil.validateToken(token);
+        String roleString = jwtUtil.getRoleFromToken(token); //🔥 Rolle aus Token extrahieren
 
-        if (email != null) {
-            // Lazy-Loading von UserService, um Circular Dependency zu vermeiden
-            if (userService == null) {
-                userService = applicationContext.getBean(UserService.class);
-            }
+        if (email != null && roleString != null && !roleString.isEmpty()) {
+            java_work.de.backend.model.User.Role role = java_work.de.backend.model.User.Role.valueOf(roleString); // 🛠️ Enum aus String erzeugen!
 
             UserDetails userDetails = new User(
                     email,
                     "",
-                    Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))
+                    Collections.singleton(new SimpleGrantedAuthority(role.name())) // Korrekte Rolle setzen!
             );
+
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities()
                     );
+
             SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
         chain.doFilter(request, response);
     }
+
 }

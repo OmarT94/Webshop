@@ -61,7 +61,7 @@ class AdminControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("Rolle erfolgreich geändert!"));
 
-        verify(userService).save(any(User.class));
+        verify(userService).saveUser(any(User.class));
     }
 
     @Test

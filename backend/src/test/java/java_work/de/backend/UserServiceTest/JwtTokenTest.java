@@ -4,6 +4,7 @@ package java_work.de.backend.UserServiceTest;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import java_work.de.backend.model.User;
 import java_work.de.backend.service.JwtConfig;
 import java_work.de.backend.service.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,9 +79,9 @@ class JwtTokenTest {
     void validateToken_tampered_fail() {
         // Arrange
         String username = "testUser";
-        String role = "USER";
+        String role = "ROLE_USER";
 
-        String validToken = jwtUtil.generateToken(username, role);
+        String validToken = jwtUtil.generateToken(username, User.Role.valueOf(role));
 
         // Simuliere eine Manipulation am Token (einfach ein Zeichen hinzufügen)
         String tamperedToken = validToken + "1";
@@ -91,4 +92,41 @@ class JwtTokenTest {
         // Assert
         assertNull(result, "Manipuliertes Token sollte nicht validiert werden");
     }
+
+    @Test
+    @DisplayName("Soll die Rolle aus einem gültigen Token extrahieren")
+    void getRoleFromToken_ShouldReturnRole_WhenTokenIsValid() {
+        // Given: Ein gültiges JWT-Token mit der Rolle "ROLE_USER"
+        String token = generateToken("", User.Role.valueOf("ROLE_USER"));
+
+        // When: Die Methode wird aufgerufen
+        String role = jwtUtil.getRoleFromToken(token);
+
+        // Then: Die extrahierte Rolle sollte "ROLE_USER" sein
+        assertNotNull(role, "Rolle sollte nicht null sein");
+        assertEquals("ROLE_USER", role, "Die extrahierte Rolle sollte korrekt sein");
+    }
+
+    @Test
+    @DisplayName("Soll null zurückgeben, wenn das Token ungültig ist")
+    void getRoleFromToken_ShouldReturnNull_WhenTokenIsInvalid() {
+        // Given: Ein ungültiges Token
+        String invalidToken = "invalidToken123";
+
+        // When: Die Methode wird aufgerufen
+        String role = jwtUtil.getRoleFromToken(invalidToken);
+
+        // Then: Rolle sollte null sein
+        assertNull(role, "Bei einem ungültigen Token sollte null zurückgegeben werden");
+    }
+    public String generateToken(String email, User.Role role) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role",role.name())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 Stunden gültig
+                .signWith(JwtConfig.SECRET_KEY, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 }

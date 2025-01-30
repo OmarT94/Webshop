@@ -44,7 +44,7 @@ public class AdminController {
             );
 
             // Geänderten Benutzer speichern
-            userService.save(updatedUser);
+            userService.saveUser(updatedUser);
             return ResponseEntity.ok("Rolle erfolgreich geändert!");
 
         } catch (IllegalArgumentException e) {

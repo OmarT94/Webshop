@@ -31,19 +31,19 @@ public class ProductController {
 
     // NUR ADMIN DARF:
     // -> durch die SecurityConfig geregelt
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ProductDTO addProduct(@Valid @RequestBody ProductDTO productDTO) {
         return productService.saveProduct(productDTO);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ProductDTO updateProduct(@PathVariable String id,  @Valid @RequestBody ProductDTO productDTO) {
         return productService.updateProduct(id, productDTO);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteProduct(@PathVariable String id) {
         productService.deleteProduct(id);

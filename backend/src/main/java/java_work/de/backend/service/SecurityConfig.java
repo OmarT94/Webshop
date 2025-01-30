@@ -39,9 +39,9 @@ public class SecurityConfig {
                        // .requestMatchers("/api/products/**").permitAll()   all users can add/delete/update
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Nur Admin darf Produkte erstellen, bearbeiten, löschen
-                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ROLE_ADMIN")
 
                         // Lesen von Produkten (GET) ist jedem erlaubt
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()

@@ -60,7 +60,7 @@ class AuthControllerTest {
 
     @Test
     void register_success() throws Exception {
-        UserRegistrationDTO dto = new UserRegistrationDTO("new@example.com", "password123");
+        UserRegistrationDTO dto = new UserRegistrationDTO("new@example.com", "password123","");
 
         when(userService.findByEmail(dto.email())).thenReturn(Optional.empty());
 
@@ -73,7 +73,7 @@ class AuthControllerTest {
     }
     @Test
     void register_shouldReturnBadRequest_whenEmailIsInvalid() throws Exception {
-        UserRegistrationDTO dto = new UserRegistrationDTO("invalid-email", "pass");
+        UserRegistrationDTO dto = new UserRegistrationDTO("invalid-email", "pass","");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ class AuthControllerTest {
 
     @Test
     void register_error_emailExists() throws Exception {
-        UserRegistrationDTO dto = new UserRegistrationDTO("bob@example.com", "secret123");
+        UserRegistrationDTO dto = new UserRegistrationDTO("bob@example.com", "secret123","");
 
         when(userService.findByEmail(dto.email()))
                 .thenReturn(Optional.of(new User("123", "bob@example.com", "pass", User.Role.ROLE_USER)));
@@ -118,7 +118,8 @@ class AuthControllerTest {
         when(authenticationManager.authenticate(any())).thenReturn(authMock);
 
         //**Mock für JWT-Erstellung (Fix mit zwei Parametern!)**
-        when(jwtUtil.generateToken(anyString(), anyString())).thenReturn("mocked-jwt-token");
+        when(jwtUtil.generateToken(anyString(), any(User.Role.class))).thenReturn("mocked-jwt-token");
+
 
         // Login-Daten erstellen
         UserLoginDTO dto = new UserLoginDTO("charlie@example.com", "secret123");

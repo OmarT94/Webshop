@@ -13,9 +13,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -96,13 +98,32 @@ class JwtAuthFilterTest {
     @Test
     @DisplayName("Gültiges Token sollte authentifizieren")
     void doFilter_validToken_shouldAuthenticate() throws Exception {
+        // 1. Mock the request to return a valid JWT token
         when(request.getHeader("Authorization")).thenReturn("Bearer someValidToken");
+
+        // 2. Mock the JWT utility to validate the token and return the username
         when(jwtUtil.validateToken("someValidToken")).thenReturn("test@example.com");
 
+        // 3. Mock the role extraction from JWT
+        when(jwtUtil.getRoleFromToken("someValidToken")).thenReturn("ROLE_USER"); // ✅ FIXED
+
+        // 4. Ensure SecurityContextHolder starts clean
+        SecurityContextHolder.clearContext();
+
+        // 5. Run the filter
         jwtAuthFilter.doFilter(request, response, filterChain);
 
+        // 6. Verify that the filter proceeds with the request
         verify(filterChain).doFilter(request, response);
-        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+
+        // 7. Check if authentication is correctly set
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertNotNull(authentication, "Authentication should not be null");
+        assertEquals("test@example.com", authentication.getName(), "Username should match the validated token");
+
+        // 8. Check if the role is properly set
+        assertTrue(authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_USER")),
+                "User should have ROLE_USER authority");
     }
 
 }
