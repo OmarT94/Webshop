@@ -10,7 +10,7 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,   // Falls Backend CORS-Probleme macht
         secure: false,        // Falls dein Backend HTTPS erwartet
-        rewrite: (path) => path.replace(/^\/api/, '') // Falls das Backend kein "/api" erwartet
+       ws: true,
       },
     },
   },
