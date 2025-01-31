@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -30,11 +31,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter ) throws Exception {
         http
+                .cors(Customizer.withDefaults()) //  CORS aktivieren!
                 .csrf(AbstractHttpConfigurer::disable) // CSRF-Schutz deaktivieren (neue API)
                 // CSRF-Schutz ausschalten
                 .authorizeHttpRequests(auth -> auth
                         // Authentifizierung für Auth-Routen erlauben
-                        .requestMatchers("/api/auth/**").permitAll() // Authentifizierung offen für alle
+                        // Lesen von Produkten (GET) ist jedem erlaubt
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() //  Registrierung und Login für alle freigeben
                         // Admin-Endpunkte
                        // .requestMatchers("/api/products/**").permitAll()   all users can add/delete/update
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -43,8 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ROLE_ADMIN")
 
-                        // Lesen von Produkten (GET) ist jedem erlaubt
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+
 
                         // Alle anderen Endpunkte benötigen eine Authentifizierung
                         .anyRequest().authenticated()
