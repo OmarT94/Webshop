@@ -4,7 +4,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Products from "./pages/Products";
 import { useAuthStore } from "./store/authStore";
-import LogoutButton from "./Components/LogoutButton.tsx";
+import LogoutButton from "./components/LogoutButton.tsx";
 
 
 export default function App() {

@@ -37,8 +37,8 @@ class AdminControllerTest {
     @WithMockUser(username = "admin@example.com", roles = "ADMIN") // Sicherstellen, dass Admin-Rolle gesetzt ist
     void getAllUsers_success() throws Exception {
         List<User> mockUsers = List.of(
-                new User("1", "alice@example.com", "pwHash", User.Role.ROLE_USER),
-                new User("2", "admin@example.com", "pwHash", User.Role.ROLE_ADMIN)
+                new User("alice@example.com", "pwHash", User.Role.ROLE_USER),
+                new User( "admin@example.com", "pwHash", User.Role.ROLE_ADMIN)
         );
         when(userService.findAllUsers()).thenReturn(mockUsers);
 
@@ -52,7 +52,7 @@ class AdminControllerTest {
     @DisplayName("PUT /api/admin/users/{email}/role - Rolle erfolgreich geändert")
     @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void changeUserRole_success() throws Exception {
-        User existingUser = new User("abc", "bob@example.com", "pwHash", User.Role.ROLE_USER);
+        User existingUser = new User( "bob@example.com", "pwHash", User.Role.ROLE_USER);
         when(userService.findByEmail("bob@example.com")).thenReturn(Optional.of(existingUser));
 
         mockMvc.perform(put("/api/admin/users/bob@example.com/role")
@@ -81,7 +81,7 @@ class AdminControllerTest {
     @DisplayName("PUT /api/admin/users/{email}/role - Ungültige Rolle (400)")
     @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void changeUserRole_invalidRole() throws Exception {
-        User existingUser = new User("abc", "bob@example.com", "pwHash", User.Role.ROLE_USER);
+        User existingUser = new User( "bob@example.com", "pwHash", User.Role.ROLE_USER);
         when(userService.findByEmail("bob@example.com")).thenReturn(Optional.of(existingUser));
 
         mockMvc.perform(put("/api/admin/users/bob@example.com/role")

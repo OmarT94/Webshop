@@ -89,7 +89,7 @@ class AuthControllerTest {
         UserRegistrationDTO dto = new UserRegistrationDTO("bob@example.com", "secret123","");
 
         when(userService.findByEmail(dto.email()))
-                .thenReturn(Optional.of(new User("123", "bob@example.com", "pass", User.Role.ROLE_USER)));
+                .thenReturn(Optional.of(new User( "bob@example.com", "pass", User.Role.ROLE_USER)));
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +113,7 @@ class AuthControllerTest {
         // `UserService` soll den Benutzer finden
         when(userService.loadUserByUsername("charlie@example.com")).thenReturn(userDetailsMock);
         when(userService.findByEmail("charlie@example.com"))
-                .thenReturn(Optional.of(new User("1", "charlie@example.com", "secret123", User.Role.ROLE_USER)));
+                .thenReturn(Optional.of(new User( "charlie@example.com", "secret123", User.Role.ROLE_USER)));
 
         // `AuthenticationManager` soll erfolgreich authentifizieren
         when(authenticationManager.authenticate(any())).thenReturn(authMock);

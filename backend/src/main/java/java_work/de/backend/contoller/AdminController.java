@@ -37,7 +37,7 @@ public class AdminController {
             // Benutzer aus der Datenbank holen und neues User-Objekt mit neuer Rolle erstellen
             User existingUser = userOptional.get();
             User updatedUser = new User(
-                    existingUser.id(),
+
                     existingUser.email(),
                     existingUser.password(),
                     newRole

@@ -60,7 +60,7 @@ public class TestUserService {
         // Given
         String email = "alice@example.com";
         String password = "secret";
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(new User(null, email, "hashed", User.Role.ROLE_USER)));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(new User( email, "hashed", User.Role.ROLE_USER)));
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> userService.registerUser(email, password, User.Role.ROLE_USER));
@@ -72,7 +72,7 @@ public class TestUserService {
         String email = "bob@example.com";
         String newPw = "newSecret";
 
-        User existingUser = new User("123", email, "oldHashedPw", User.Role.ROLE_USER);
+        User existingUser = new User( email, "oldHashedPw", User.Role.ROLE_USER);
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingUser));
         when(passwordEncoder.encode(newPw)).thenReturn("newHashedPw");
 
@@ -129,7 +129,7 @@ public class TestUserService {
 
     @Test
     void findByEmail_shouldReturnUser_whenUserExists() {
-        User user = new User("1", "test@example.com", "password", User.Role.ROLE_USER);
+        User user = new User( "test@example.com", "password", User.Role.ROLE_USER);
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
 
         Optional<User> result = userService.findByEmail("test@example.com");

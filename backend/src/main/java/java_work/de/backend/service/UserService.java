@@ -56,7 +56,7 @@ public class UserService implements UserDetailsService {
 
         String encryptedPassword = passwordEncoder.encode(password);
         User user = new User(
-                null, // ID durch DB generiert
+                 // ID durch DB generiert
                 email,
                 encryptedPassword,
                 role
@@ -108,7 +108,7 @@ public class UserService implements UserDetailsService {
         User existingUser = userOptional.get();
 
         User updatedUser = new User(
-                existingUser.id(),
+
                 existingUser.email(), // E-Mail bleibt unverändert
                 (newPassword != null) ? passwordEncoder.encode(newPassword) : existingUser.password(),
                 existingUser.role()
@@ -132,7 +132,6 @@ public class UserService implements UserDetailsService {
 
         User existingUser = userOptional.get();
         User updatedUser = new User(
-                existingUser.id(),
                 newEmail,
                 existingUser.password(), // Passwort bleibt unverändert
                 existingUser.role()
