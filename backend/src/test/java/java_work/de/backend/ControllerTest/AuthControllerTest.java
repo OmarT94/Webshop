@@ -30,6 +30,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -155,7 +156,7 @@ class AuthControllerTest {
         mockMvc.perform(put("/api/auth/me")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto))
-                        .with(csrf()))
+                        .with(user("test@example.com").roles("USER"))) // ✅ Authentifizierten User simulieren
                 .andExpect(status().isOk())
                 .andExpect(content().string("Deine Daten wurden erfolgreich aktualisiert!"));
     }
