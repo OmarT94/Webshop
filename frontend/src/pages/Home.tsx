@@ -37,7 +37,7 @@ export default function Home() {
                 </>
             )}
 
-            {/* 🔥 Zeigt Produkte auf der Startseite */}
+            {/*  Zeigt Produkte auf der Startseite */}
             <div className="mt-6 w-full max-w-3xl">
                 <Products />
             </div>
