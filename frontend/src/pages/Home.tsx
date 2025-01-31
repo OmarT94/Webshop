@@ -4,6 +4,7 @@ import LogoutButton from "../components/LogoutButton";
 
 export default function Home() {
     const token = useAuthStore((state) => state.token);
+    const isAdmin = useAuthStore((state) => state.isAdmin);
 
     return (
         <div className="flex flex-col items-center justify-center h-screen gap-4">
@@ -24,6 +25,13 @@ export default function Home() {
             ) : (
                 <>
                     <p>Du bist eingeloggt!</p>
+
+                    {/* Nur Admins sehen den "Manage" Button */}
+                    {isAdmin && (
+                        <Link to="/manage">
+                            <button className="p-2 bg-yellow-500 text-white rounded">Manage</button>
+                        </Link>
+                    )}
                     <LogoutButton />
                 </>
             )}

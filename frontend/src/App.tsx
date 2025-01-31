@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Products from "./pages/Products";
 import { useAuthStore } from "./store/authStore";
 import LogoutButton from "./components/LogoutButton.tsx";
+import Manage from "./pages/Manage.tsx";
 
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/products" element={<Products />} />
+                    <Route path="/manage" element={<Manage />} /> {/* Admin-Seite */}
                 </Routes>
             </div>
         </Router>
