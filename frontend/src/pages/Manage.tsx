@@ -98,7 +98,7 @@ export default function Manage() {
 
         setProducts((prevProducts) =>
             prevProducts.map((p) => {
-                console.log(`➡️ Prüfe Produkt-ID: ${p.id} (Erwartet: ${id})`);
+                console.log(`➡Prüfe Produkt-ID: ${p.id} (Erwartet: ${id})`);
                 return p.id === id ? { ...p, [field]: value } : p;
             })
         );
@@ -113,11 +113,21 @@ export default function Manage() {
 
             <div className="mt-6 border p-4 w-full max-w-lg">
                 <h3 className="font-semibold">Neues Produkt hinzufügen</h3>
-                <input type="text" placeholder="Name" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
-                <input type="text" placeholder="Beschreibung" value={newProduct.description} onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} />
-                <input type="number" placeholder="Preis" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })} />
-                <input type="number" placeholder="Stock" value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })} />
-                <input type="text" placeholder="Bild-URL" value={newProduct.image} onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} />
+                <input type="text" placeholder="Name" value={newProduct.name}
+                       onChange={(e) =>
+                           setNewProduct({ ...newProduct, name: e.target.value })} />
+                <input type="text" placeholder="Beschreibung" value={newProduct.description}
+                       onChange={(e) =>
+                           setNewProduct({ ...newProduct, description: e.target.value })} />
+                <input type="number" placeholder="Preis" value={newProduct.price}
+                       onChange={(e) =>
+                           setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })} />
+                <input type="number" placeholder="Stock" value={newProduct.stock}
+                       onChange={(e) =>
+                           setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })} />
+                <input type="text" placeholder="Bild-URL" value={newProduct.image}
+                       onChange={(e) =>
+                           setNewProduct({ ...newProduct, image: e.target.value })} />
                 <button className="p-2 bg-green-500 text-white rounded mt-2" onClick={handleAddProduct}>
                     Produkt hinzufügen
                 </button>
@@ -126,18 +136,30 @@ export default function Manage() {
             <ul className="mt-6 w-full max-w-lg">
                 {products.map((product) => (
                     <li key={product.id} className="p-4 border rounded-lg shadow-lg mb-4 flex flex-col gap-2">
-                        <input type="text" value={product.name} onChange={(e) => handleChange(product.id, "name", e.target.value)} />
-                        <input type="text" value={product.description} onChange={(e) => handleChange(product.id, "description", e.target.value)} />
-                        <input type="number" value={product.price} onChange={(e) => handleChange(product.id, "price", parseFloat(e.target.value))} />
-                        <input type="number" value={product.stock} onChange={(e) => handleChange(product.id, "stock", parseInt(e.target.value))} />
-                        <input type="text" value={product.image} onChange={(e) => handleChange(product.id, "image", e.target.value)} />
+                        <input type="text" value={product.name}
+                               onChange={(e) =>
+                                   handleChange(product.id, "name", e.target.value)} />
+                        <input type="text" value={product.description}
+                               onChange={(e) =>
+                                   handleChange(product.id, "description", e.target.value)} />
+                        <input type="number" value={product.price}
+                               onChange={(e) =>
+                                   handleChange(product.id, "price", parseFloat(e.target.value))} />
+                        <input type="number" value={product.stock}
+                               onChange={(e) =>
+                                   handleChange(product.id, "stock", parseInt(e.target.value))} />
+                        <input type="text" value={product.image}
+                               onChange={(e) =>
+                                   handleChange(product.id, "image", e.target.value)} />
 
                         {product.image && <img src={product.image} alt={product.name} className="w-32 h-32 object-cover mt-2" />}
 
-                        <button className="p-2 bg-blue-500 text-white rounded mr-2" onClick={() => handleUpdate(product.id)}>
+                        <button className="p-2 bg-blue-500 text-white rounded mr-2"
+                                onClick={() => handleUpdate(product.id)}>
                             Speichern
                         </button>
-                        <button className="p-2 bg-red-500 text-white rounded" onClick={() => handleDelete(product.id)}>
+                        <button className="p-2 bg-red-500 text-white rounded"
+                                onClick={() => handleDelete(product.id)}>
                             Löschen
                         </button>
                     </li>

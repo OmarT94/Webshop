@@ -7,6 +7,7 @@ type AuthState = {
     isAdmin: boolean;
     setToken: (token: string) => void;
     logout: () => void;
+    restoreSession: () => void; //  Neues Feature: Stelle Auth-Status beim Laden wieder her
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -23,4 +24,12 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.removeItem("token");
         set({ token: null, isAdmin: false });
     },
+    restoreSession: () => {
+        const storedToken = localStorage.getItem("token");
+        if (storedToken) {
+            const decoded: any = jwtDecode(storedToken);
+            set({ token: storedToken, isAdmin: decoded.role === "ROLE_ADMIN" });
+        }
+    },
+
 }));

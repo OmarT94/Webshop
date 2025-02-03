@@ -22,17 +22,17 @@ export const getProducts = async () => {
 
 //  Neues Produkt hinzufügen
 export const addProduct = async (token: string, product: Omit<Product, "id">): Promise<Product> => {
-    console.log("📤 Sende folgendes Produkt an das Backend:", product); // ✅ Debugging hinzufügen
+    console.log("Sende folgendes Produkt an das Backend:", product); // Debugging hinzufügen
 
     try {
         const response = await axios.post<Product>(API_URL, product, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("✅ Produkt erfolgreich gespeichert:", response.data);
+        console.log("Produkt erfolgreich gespeichert:", response.data);
         return response.data;
     } catch (error) {
-        console.error("❌ Fehler beim Hinzufügen des Produkts:", error); // ✅ Fehlerprotokollierung
+        console.error("Fehler beim Hinzufügen des Produkts:", error); // Fehlerprotokollierung
         throw error; // Fehler weitergeben
     }
 };
