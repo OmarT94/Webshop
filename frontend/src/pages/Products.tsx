@@ -6,6 +6,8 @@ type Product = {
     name: string;
     description: string;
     price: number;
+    stock: number;
+    image: string;
 };
 
 export default function Products() {
@@ -22,15 +24,16 @@ export default function Products() {
     return (
         <div className="flex flex-col items-center">
             <h2 className="text-2xl font-bold">Produkte</h2>
-            <ul className="mt-4">
+            <ul>
                 {products.map((product) => (
-                    <li key={product.id} className="p-4 border rounded-lg shadow-lg mb-4">
-                        <h3 className="text-xl font-semibold">{product.name}</h3>
-                        <p>{product.description}</p>
-                        <p className="text-green-600 font-bold">{product.price}€</p>
+                    <li key={product.id}> {/* Nutze die eindeutige ID als Key */}
+                        <div>{product.name}</div>
+                        <div>{product.description}</div>
+                        <div>{product.price}€</div>
                     </li>
                 ))}
             </ul>
+
         </div>
     );
 }

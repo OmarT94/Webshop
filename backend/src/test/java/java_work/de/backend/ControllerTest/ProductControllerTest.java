@@ -48,8 +48,8 @@ class ProductControllerTest {
     void getAllProducts_success() throws Exception {
         // Mock: productService.findAllProducts() => Liste
         List<ProductDTO> mockProducts = List.of(
-                new ProductDTO("1", "Laptop", "Desc", 999.99, 5,"testImage"),
-                new ProductDTO("2", "Smartphone", "Desc2", 499.99, 2,"testImage")
+                new ProductDTO( null,"Laptop", "Desc", 999.99, 5,"testImage"),
+                new ProductDTO( null,"Smartphone", "Desc2", 499.99, 2,"testImage")
         );
         when(productService.findAllProducts()).thenReturn(mockProducts);
 
@@ -64,7 +64,7 @@ class ProductControllerTest {
     @Test
     @DisplayName("GET /api/products/{id} - jeder darf lesen => 200 OK")
     void getProduct_success() throws Exception {
-        ProductDTO mockProd = new  ProductDTO("1", "Laptop", "Desc", 999.99, 5,"testImage");
+        ProductDTO mockProd = new  ProductDTO( null,"Laptop", "Desc", 999.99, 5,"testImage");
         when(productService.findProductById("1")).thenReturn(mockProd);
 
         mockMvc.perform(get("/api/products/1"))
@@ -80,9 +80,9 @@ class ProductControllerTest {
     @WithMockUser(roles = "ADMIN")  // Admin darf
     void addProduct_admin_success() throws Exception {
         // Angelegtes Produkt
-        ProductDTO inputProd = new  ProductDTO(null, "Laptop", "Desc", 999.99, 5,"testImage");
+        ProductDTO inputProd = new  ProductDTO( null,"Laptop", "Desc", 999.99, 5,"testImage");
         // Service gibt Produkt mit generierter ID zurück
-        ProductDTO savedProd = new  ProductDTO("123", "Laptop", "Desc", 999.99, 5,"testImage");
+        ProductDTO savedProd = new  ProductDTO(null,"Laptop", "Desc", 999.99, 5,"testImage");
         when(productService.saveProduct(any( ProductDTO.class))).thenReturn(savedProd);
 
         // JSON des inputProd
@@ -103,7 +103,7 @@ class ProductControllerTest {
     @DisplayName("POST /api/products - als USER => 403 Forbidden")
     @WithMockUser(roles = "USER")
     void addProduct_user_forbidden() throws Exception {
-        ProductDTO inputProd = new  ProductDTO(null, "Laptop", "Desc", 999.99, 5,"testImage");
+        ProductDTO inputProd = new  ProductDTO( null,"Laptop", "Desc", 999.99, 5,"testImage");
         String prodJson = new ObjectMapper().writeValueAsString(inputProd);
 
         mockMvc.perform(post("/api/products")
@@ -118,7 +118,7 @@ class ProductControllerTest {
     @DisplayName("PUT /api/products/{id} - nur ADMIN => 200 OK")
     @WithMockUser(roles = "ADMIN")
     void updateProduct_admin_success() throws Exception {
-        ProductDTO updated = new  ProductDTO("1", "Laptop Updated", "Desc2", 1099.99, 4,"testImage");
+        ProductDTO updated = new  ProductDTO( null,"Laptop Updated", "Desc2", 1099.99, 4,"testImage");
         when(productService.updateProduct(eq("1"),any( ProductDTO.class))).thenReturn(updated);
 
         // JSON

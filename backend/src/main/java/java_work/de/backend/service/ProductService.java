@@ -3,6 +3,7 @@ package java_work.de.backend.service;
 import java_work.de.backend.dto.ProductDTO;
 import java_work.de.backend.model.Product;
 import java_work.de.backend.repo.ProductRepository;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,17 +32,8 @@ private final ProductRepository productRepo;
     }
 
     public ProductDTO saveProduct(ProductDTO productDTO) {
-        Product product = productRepo.save(mapToEntity(productDTO));
-        return mapToDTO(product);
-    }
-
-    // Produkt aktualisieren
-    public ProductDTO updateProduct(String id, ProductDTO productDTO) {
-        Product existingProduct = productRepo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Produkt mit ID " + id + " nicht gefunden!"));
-
-        Product updatedProduct = new Product(
-                id,
+        Product newProduct = new Product(
+                new ObjectId(),
                 productDTO.name(),
                 productDTO.description(),
                 productDTO.price(),
@@ -49,8 +41,28 @@ private final ProductRepository productRepo;
                 productDTO.image()
         );
 
-        productRepo.save(updatedProduct);
-        return mapToDTO(updatedProduct);
+        Product savedProduct = productRepo.save(newProduct);
+        return mapToDTO(savedProduct); // ✅ Richtiges Produkt zurückgeben
+    }
+
+
+    // Produkt aktualisieren
+    public ProductDTO updateProduct(String id, ProductDTO productDTO) {
+        Product existingProduct = productRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Produkt mit ID " + id + " nicht gefunden!"));
+
+        Product updatedProduct = new Product(
+
+                existingProduct.id(),
+                productDTO.name(),
+                productDTO.description(),
+                productDTO.price(),
+                productDTO.stock(),
+                productDTO.image()
+        );
+
+         Product saveProduct = productRepo.save(updatedProduct);
+        return mapToDTO(saveProduct);
     }
 
     // Produkt löschen
@@ -61,7 +73,7 @@ private final ProductRepository productRepo;
     // Mapping Methoden
     private ProductDTO mapToDTO(Product product) {
         return new ProductDTO(
-                product.id(),
+                product.id().toString(), // ✅ ObjectId zu String konvertieren!
                 product.name(),
                 product.description(),
                 product.price(),
@@ -69,16 +81,16 @@ private final ProductRepository productRepo;
                 product.image()
         );
     }
-    private Product mapToEntity(ProductDTO productDTO) {
-        return new Product(
-                productDTO.id(),
-                productDTO.name(),
-                productDTO.description(),
-                productDTO.price(),
-                productDTO.stock(),
-                productDTO.image()
-        );
-    }
+//    private Product mapToEntity(ProductDTO productDTO) {
+//        return new Product(
+//                productDTO.id(),
+//                productDTO.name(),
+//                productDTO.description(),
+//                productDTO.price(),
+//                productDTO.stock(),
+//                productDTO.image()
+//        );
+//    }
 
     //Trennung von DTO und Entity
     //Klare Mapping-Methoden (mapToDTO, mapToEntity)
