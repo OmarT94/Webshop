@@ -20,6 +20,7 @@ public record ProductDTO(
         @Min(value = 0, message = "Lagerbestand darf nicht negativ sein!")
         Integer stock,
 
-        String image
+        @NotBlank(message = "Bild ist erforderlich!") // Base64-String erforderlich
+        String imageBase64
 ) {
 }

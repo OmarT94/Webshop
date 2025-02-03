@@ -3,6 +3,8 @@ import { getProducts, addProduct, updateProduct, deleteProduct, Product } from "
 import { useAuthStore } from "../store/authStore";
 import { useNavigate } from "react-router-dom";
 
+
+
 export default function Manage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [newProduct, setNewProduct] = useState<Omit<Product, "id">>({
@@ -10,7 +12,7 @@ export default function Manage() {
         description: "",
         price: 0,
         stock: 0,
-        image: "",
+        imageBase64: "",
     });
 
     const token = useAuthStore((state) => state.token);
@@ -35,7 +37,7 @@ export default function Manage() {
                     description: product.description || "",
                     price: product.price || 0,
                     stock: product.stock || 0,
-                    image: product.image || "",
+                    image: product.imageBase64 || "",
                 }));
 
                 setProducts(validatedData);
@@ -44,7 +46,6 @@ export default function Manage() {
             }
         }
         fetchData();
-        console.log(products);
     }, []);
 
     const handleAddProduct = async () => {
@@ -58,7 +59,7 @@ export default function Manage() {
         try {
             const addedProduct = await addProduct(token, newProduct);
             setProducts([...products, addedProduct]);
-            setNewProduct({ name: "", description: "", price: 0, stock: 0, image: "" });
+            setNewProduct({ name: "", description: "", price: 0, stock: 0, imageBase64: "" });
         } catch (error) {
             console.error("Fehler beim Hinzufügen des Produkts:", error);
         }
@@ -103,7 +104,17 @@ export default function Manage() {
             })
         );
     };
+    //  Datei als Base64 konvertieren
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            setNewProduct({ ...newProduct, imageBase64: reader.result as string });
+        };
+    };
 
 
 
@@ -115,26 +126,28 @@ export default function Manage() {
                 <h3 className="font-semibold">Neues Produkt hinzufügen</h3>
                 <input type="text" placeholder="Name" value={newProduct.name}
                        onChange={(e) =>
-                           setNewProduct({ ...newProduct, name: e.target.value })} />
+                           setNewProduct({...newProduct, name: e.target.value})}/>
                 <input type="text" placeholder="Beschreibung" value={newProduct.description}
                        onChange={(e) =>
-                           setNewProduct({ ...newProduct, description: e.target.value })} />
+                           setNewProduct({...newProduct, description: e.target.value})}/>
                 <input type="number" placeholder="Preis" value={newProduct.price}
                        onChange={(e) =>
-                           setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })} />
+                           setNewProduct({...newProduct, price: parseFloat(e.target.value)})}/>
                 <input type="number" placeholder="Stock" value={newProduct.stock}
                        onChange={(e) =>
-                           setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })} />
-                <input type="text" placeholder="Bild-URL" value={newProduct.image}
-                       onChange={(e) =>
-                           setNewProduct({ ...newProduct, image: e.target.value })} />
+                           setNewProduct({...newProduct, stock: parseInt(e.target.value)})}/>
+                <input type="file" accept="image/*" onChange={handleFileChange}/>
+                {newProduct.imageBase64 && (
+                    <img src={newProduct.imageBase64} alt="Produktbild" className="w-32 h-32 mt-2" />
+                )}
+
                 <button className="p-2 bg-green-500 text-white rounded mt-2" onClick={handleAddProduct}>
                     Produkt hinzufügen
                 </button>
             </div>
 
             <ul className="mt-6 w-full max-w-lg">
-                {products.map((product) => (
+            {products.map((product) => (
                     <li key={product.id} className="p-4 border rounded-lg shadow-lg mb-4 flex flex-col gap-2">
                         <input type="text" value={product.name}
                                onChange={(e) =>
@@ -148,11 +161,11 @@ export default function Manage() {
                         <input type="number" value={product.stock}
                                onChange={(e) =>
                                    handleChange(product.id, "stock", parseInt(e.target.value))} />
-                        <input type="text" value={product.image}
+                        <input type="text" value={product.imageBase64}
                                onChange={(e) =>
-                                   handleChange(product.id, "image", e.target.value)} />
+                                   handleChange(product.id, "imageBase64", e.target.value)} />
 
-                        {product.image && <img src={product.image} alt={product.name} className="w-32 h-32 object-cover mt-2" />}
+                        {product.imageBase64 && <img src={product.imageBase64} alt={product.name} className="w-32 h-32 object-cover mt-2" />}
 
                         <button className="p-2 bg-blue-500 text-white rounded mr-2"
                                 onClick={() => handleUpdate(product.id)}>

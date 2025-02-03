@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
-import { getProducts } from "../api/products";
+import {getProducts, Product} from "../api/products";
 
-type Product = {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    stock: number;
-    image: string;
-};
+
 
 export default function Products() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -22,18 +15,21 @@ export default function Products() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center">
-            <h2 className="text-2xl font-bold">Produkte</h2>
-            <ul>
+        <div className="p-6">
+            <h2 className="text-2xl font-bold text-center mb-6">Produkte</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
-                    <li key={product.id}> {/* Nutze die eindeutige ID als Key */}
-                        <div>{product.name}</div>
-                        <div>{product.description}</div>
-                        <div>{product.price}€</div>
-                    </li>
+                    <div key={product.id} className="border rounded-lg p-4 shadow-lg flex flex-col items-center">
+                        {product.imageBase64 && (
+                            <img src={product.imageBase64} alt={product.name} className="w-40 h-40 object-cover"/>
+                        )}
+                        <h3 className="text-lg font-semibold mt-2">{product.name}</h3>
+                        <p className="text-gray-500">{product.description}</p>
+                        <p className="text-green-600 font-bold">{product.price} €</p>
+                        <p className="text-gray-400">Lagerbestand: {product.stock}</p>
+                    </div>
                 ))}
-            </ul>
-
+            </div>
         </div>
     );
 }
