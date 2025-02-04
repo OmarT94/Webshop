@@ -1,7 +1,9 @@
 package java_work.de.backend.contoller;
 
 import java_work.de.backend.dto.OrderDTO;
+import java_work.de.backend.model.Address;
 import java_work.de.backend.service.OrderService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -24,13 +26,44 @@ public class OrderController {
         return orderService.getUserOrders(userEmail);
     }
 
+//    @PutMapping("/{orderId}/status")
+//    public OrderDTO updateOrderStatus(@PathVariable String orderId, @RequestParam String status) {
+//        return orderService.updateOrderStatus(orderId, status);
+//    }
+
+//    @DeleteMapping("/{orderId}")
+//    public void cancelOrder(@PathVariable String orderId) {
+//        orderService.cancelOrder(orderId);
+//    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public List<OrderDTO> getAllOrders() {
+        return orderService.getAllOrders();
+    }
+
     @PutMapping("/{orderId}/status")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public OrderDTO updateOrderStatus(@PathVariable String orderId, @RequestParam String status) {
         return orderService.updateOrderStatus(orderId, status);
     }
 
-    @DeleteMapping("/{orderId}")
-    public void cancelOrder(@PathVariable String orderId) {
-        orderService.cancelOrder(orderId);
+    @PutMapping("/{orderId}/payment")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public OrderDTO updatePaymentStatus(@PathVariable String orderId, @RequestParam String paymentStatus) {
+        return orderService.updatePaymentStatus(orderId, paymentStatus);
     }
+
+    @PutMapping("/{orderId}/address")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public OrderDTO updateShippingAddress(@PathVariable String orderId, @RequestBody Address newAddress) {
+        return orderService.updateShippingAddress(orderId, newAddress);
+    }
+
+    @DeleteMapping("/{orderId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public void deleteOrder(@PathVariable String orderId) {
+        orderService.deleteOrder(orderId);
+    }
+
 }

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import Products from "./Products.tsx";
 
 export default function Home() {
     const token = useAuthStore((state) => state.token);
@@ -28,6 +29,10 @@ export default function Home() {
                     )}
                 </>
             )}
+            {/*  Zeigt Produkte auf der Startseite */}
+            <div className="mt-6 w-full max-w-3xl">
+                <Products />
+            </div>
         </div>
     );
 }

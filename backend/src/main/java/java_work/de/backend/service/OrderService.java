@@ -1,6 +1,6 @@
 package java_work.de.backend.service;
-
 import java_work.de.backend.dto.OrderDTO;
+import java_work.de.backend.model.Address;
 import java_work.de.backend.model.Order;
 import java_work.de.backend.repo.OrderRepository;
 import org.bson.types.ObjectId;
@@ -56,6 +56,47 @@ public class OrderService {
     }
 
     public void cancelOrder(String orderId) {
+        orderRepository.deleteById(orderId);
+    }
+
+    public List<OrderDTO> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+    public OrderDTO updatePaymentStatus(String orderId, String paymentStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden"));
+        Order.PaymentStatus newPaymentStatus = Order.PaymentStatus.valueOf(paymentStatus);
+        Order updatedOrder = new Order(
+                order.id(),
+                order.userEmail(),
+                order.items(),
+                order.totalPrice(),
+                order.shippingAddress(),
+                newPaymentStatus,
+                order.orderStatus()
+
+        );
+        return mapToDTO(orderRepository.save(updatedOrder));
+    }
+
+    public OrderDTO updateShippingAddress(String orderId, Address newShippingAddress) {
+        Order order =orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden"));
+        Order updatedOrder = new Order(
+                order.id(),
+                order.userEmail(),
+                order.items(),
+                order.totalPrice(),
+                newShippingAddress,
+                order.paymentStatus(),
+                order.orderStatus()
+        );
+        return mapToDTO(orderRepository.save(updatedOrder));
+    }
+    public void deleteOrder(String orderId) {
         orderRepository.deleteById(orderId);
     }
 
