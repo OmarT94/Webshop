@@ -26,7 +26,6 @@ export default function Products() {
                         <h3 className="text-lg font-semibold mt-2">{product.name}</h3>
                         <p className="text-gray-500">{product.description}</p>
                         <p className="text-green-600 font-bold">{product.price} €</p>
-                        <p className="text-gray-400">Lagerbestand: {product.stock}</p>
                     </div>
                 ))}
             </div>

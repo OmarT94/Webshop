@@ -46,14 +46,6 @@ public class AuthController {
         userService.registerUser(dto.email(), dto.password(), userRole);
         return ResponseEntity.ok("Registrierung erfolgreich!");
     }
-//@PostMapping("/registerAdmin")
-//public ResponseEntity<String> registerAdmin(@Valid @RequestBody UserRegistrationDTO dto) {
-//    if (userService.findByEmail(dto.email()).isPresent()) {
-//        return ResponseEntity.badRequest().body("E-Mail existiert bereits!");
-//    }
-//    userService.registerUser(dto.email(), dto.password(), User.Role.ROLE_ADMIN);
-//    return ResponseEntity.ok("Admin Registrierung erfolgreich!");
-//}
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody UserLoginDTO dto) {
@@ -90,7 +82,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-
     @PutMapping("/me")
     public ResponseEntity<String> updateMyDetails(
             @Valid @RequestBody UserPasswordUpdateDTO dto) {
@@ -106,6 +97,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
 
 
 
