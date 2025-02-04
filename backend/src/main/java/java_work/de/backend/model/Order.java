@@ -2,11 +2,11 @@ package java_work.de.backend.model;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+
 
 import java.util.List;
 
-@Document(collection = "orders")
+
 public record Order(
         @Id ObjectId id,
         String userEmail, //  Verknüpfung zum Benutzer

@@ -7,7 +7,7 @@ export default function LogoutButton() {
 
     const handleLogout = () => {
         logout();
-        navigate("/"); // Nach Logout zur Startseite zurück
+        navigate("/"); // Zur Startseite zurück
     };
 
     return (
