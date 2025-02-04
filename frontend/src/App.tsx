@@ -8,6 +8,7 @@ import Manage from "./pages/Manage.tsx";
 import {useEffect, useState} from "react";
 import Profile from "./pages/Profile.tsx";
 import Navbar from "./components/Navbar.tsx";
+import Orders from "./pages/Orders.tsx";
 
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
                     <Route path="/products" element={<Products />} />
                     <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
                     <Route path="/manage" element={token ? <Manage /> : <Navigate to="/login" />} />
+                    <Route path="/orders" element={token ? <Orders /> : <Home />} />
                 </Routes>
             </div>
         </Router>

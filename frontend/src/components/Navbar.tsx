@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import LogoutButton from "./LogoutButton"; //  Nutze bestehende Logout-Komponente
+import LogoutButton from "./LogoutButton";
 
 export default function Navbar() {
     const token = useAuthStore((state) => state.token);
@@ -18,8 +18,13 @@ export default function Navbar() {
                 ) : (
                     <>
                         <Link to="/profile">Profil</Link>
-                        {isAdmin && <Link to="/manage">Admin</Link>}
-                        <LogoutButton /> {/*  Nutzt die Logout-Komponente */}
+                        {isAdmin && (
+                            <>
+                                <Link to="/manage">Manage</Link>
+                                <Link to="/orders">Bestellungen</Link> {/*  Orders-Seite */}
+                            </>
+                        )}
+                        <LogoutButton />
                     </>
                 )}
             </div>

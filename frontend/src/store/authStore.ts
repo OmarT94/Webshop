@@ -19,12 +19,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     setToken: (token) => {
         localStorage.setItem("token", token);
         const decoded: any = jwtDecode(token);
+        console.log("Token gesetzt:",decoded);
         set({
             token,
             isAdmin: decoded.role === "ROLE_ADMIN",
             tokenEmail: decoded.email,
         });
-        localStorage.setItem("tokenEmail", decoded.email); // 🆕 E-Mail speichern
+        localStorage.setItem("token", token);
+        localStorage.setItem("tokenEmail", decoded.email); //  E-Mail speichern
+
     },
 
     logout: () => {
@@ -36,7 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     restoreSession: () => {
         const storedToken = localStorage.getItem("token");
         const storedEmail = localStorage.getItem("tokenEmail");
-
+        console.log("🔄 Sitzung wiederherstellen:", storedToken, storedEmail); // Debugging
         if (storedToken && storedEmail) {
             const decoded: any = jwtDecode(storedToken);
             set({

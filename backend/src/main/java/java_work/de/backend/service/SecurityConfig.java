@@ -58,6 +58,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority("ROLE_ADMIN")
 
 
+//                        .requestMatchers(HttpMethod.POST, "/api/orders").authenticated() // Bestellung aufgeben
+//                        .requestMatchers(HttpMethod.GET, "/api/orders/{userEmail}").authenticated() // Benutzer kann eigene Bestellungen abrufen ✅
+//                        .requestMatchers(HttpMethod.GET, "/api/orders").hasRole("ADMIN") // Admin kann alle Bestellungen abrufen
+//                        .requestMatchers(HttpMethod.PUT, "/api/orders/**").hasRole("ADMIN") // Admin kann Status ändern
+//                        .requestMatchers(HttpMethod.DELETE, "/api/orders/**").hasRole("ADMIN") // Admin kann löschen
+
+
 
                         // Alle anderen Endpunkte benötigen eine Authentifizierung
                         .anyRequest().authenticated()
