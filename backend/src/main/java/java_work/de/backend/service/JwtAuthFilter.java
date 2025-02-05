@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 /*
 Damit Spring Security JWT automatisch verarbeitet,
@@ -51,15 +51,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
         String email = jwtUtil.validateToken(token);
-        String roleString = jwtUtil.getRoleFromToken(token); //🔥 Rolle aus Token extrahieren
+        String roleString = jwtUtil.getRoleFromToken(token); // Rolle aus Token extrahieren
 
         if (email != null && roleString != null && !roleString.isEmpty()) {
-            java_work.de.backend.model.User.Role role = java_work.de.backend.model.User.Role.valueOf(roleString); // 🛠️ Enum aus String erzeugen!
+            SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleString); //  Rolle richtig setzen!
 
             UserDetails userDetails = new User(
                     email,
                     "",
-                    Collections.singleton(new SimpleGrantedAuthority(role.name())) // Korrekte Rolle setzen!
+                    List.of(authority) //  Rolle als Authority übergeben!
             );
 
             UsernamePasswordAuthenticationToken authToken =

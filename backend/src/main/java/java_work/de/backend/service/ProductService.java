@@ -73,7 +73,7 @@ private final ProductRepository productRepo;
     // Mapping Methoden
     private ProductDTO mapToDTO(Product product) {
         return new ProductDTO(
-                product.id().toString(), // ✅ ObjectId zu String konvertieren!
+                product.id().toString(), //  ObjectId zu String konvertieren!
                 product.name(),
                 product.description(),
                 product.price(),

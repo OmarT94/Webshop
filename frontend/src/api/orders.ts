@@ -1,6 +1,5 @@
 import axios from "axios";
 
-
 const API_URL = "/api/orders";
 
 export type Order = {
@@ -26,49 +25,76 @@ export type Address = {
     country: string;
 };
 
-
+//  Hilfsfunktion für den Auth-Header
+const getAuthHeader = () => {
+    const token = localStorage.getItem("token");
+    return { Authorization: `Bearer ${token}` };
+};
 
 //  Bestellungen eines Nutzers abrufen
-export const getUserOrders = async (token: string, userEmail: string): Promise<Order[]> => {
+export const getUserOrders = async (userEmail: string): Promise<Order[]> => {
     const response = await axios.get(`${API_URL}/${userEmail}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+            ...getAuthHeader(),
+            "Content-Type": "application/json",
+        },
     });
     return response.data;
 };
 
-//  Bestellung stornieren (löschen)
-export const cancelOrder = async (orderId: string) => {
-    return axios.delete(`${API_URL}/${orderId}`);
+//  Bestellung stornieren (nur für Nutzer)
+export const cancelOrder = async (orderId: string): Promise<void> => {
+    await axios.delete(`${API_URL}/${orderId}`, {
+        headers: getAuthHeader(),
+    });
 };
 
-//  Alle Bestellungen abrufen (nur für Admins)
+// Alle Bestellungen abrufen (nur für Admins)
 export const getAllOrders = async (): Promise<Order[]> => {
-    const token = localStorage.getItem("token"); // Token holen
     const response = await axios.get(API_URL, {
-        headers: { Authorization: `Bearer ${token}` }, //  Auth-Header setzen
+        headers: getAuthHeader(),
     });
     return response.data;
 };
 
-//  Bestellstatus aktualisieren (z.B. Bearbeitung → Versendet)
+// Bestellstatus aktualisieren (nur für Admins)
 export const updateOrderStatus = async (orderId: string, status: string): Promise<Order> => {
-    const response = await axios.put(`${API_URL}/${orderId}/status?status=${status}`);
+    const response = await axios.put(`${API_URL}/${orderId}/status`, {}, {
+        headers: {
+            ...getAuthHeader(),
+            "Content-Type": "application/json",
+        },
+        params: { status },
+    });
     return response.data;
 };
 
-//  Zahlungsstatus aktualisieren (Ausstehend → Bezahlt)
+//  Zahlungsstatus aktualisieren (nur für Admins)
 export const updatePaymentStatus = async (orderId: string, paymentStatus: string): Promise<Order> => {
-    const response = await axios.put(`${API_URL}/${orderId}/payment?paymentStatus=${paymentStatus}`);
+    const response = await axios.put(`${API_URL}/${orderId}/payment`, {}, {
+        headers: {
+            ...getAuthHeader(),
+            "Content-Type": "application/json",
+        },
+        params: { paymentStatus },
+    });
     return response.data;
 };
 
-//  Lieferadresse aktualisieren
-export const updateShippingAddress = async (orderId: string, newAddress: Address ): Promise<Order> => {
-    const response = await axios.put(`${API_URL}/${orderId}/address`, newAddress);
+//  Lieferadresse aktualisieren (nur für Admins)
+export const updateShippingAddress = async (orderId: string, newAddress: Address): Promise<Order> => {
+    const response = await axios.put(`${API_URL}/${orderId}/address`, newAddress, {
+        headers: {
+            ...getAuthHeader(),
+            "Content-Type": "application/json",
+        },
+    });
     return response.data;
 };
 
-//  Bestellung löschen
+//  Bestellung löschen (nur für Admins)
 export const deleteOrder = async (orderId: string): Promise<void> => {
-    await axios.delete(`${API_URL}/${orderId}`);
+    await axios.delete(`${API_URL}/${orderId}`, {
+        headers: getAuthHeader(),
+    });
 };

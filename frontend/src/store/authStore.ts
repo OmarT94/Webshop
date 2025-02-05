@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import {jwtDecode} from "jwt-decode";
-
+import { jwtDecode } from "jwt-decode";
 
 type AuthState = {
     token: string | null;
@@ -14,21 +13,36 @@ type AuthState = {
 export const useAuthStore = create<AuthState>((set) => ({
     token: localStorage.getItem("token"),
     isAdmin: false,
-    tokenEmail: localStorage.getItem("tokenEmail"),
+    tokenEmail: localStorage.getItem("tokenEmail") || null,
 
     setToken: (token) => {
-        localStorage.setItem("token", token);
-        const decoded: any = jwtDecode(token);
-        console.log("Token gesetzt:",decoded);
-        set({
-            token,
-            isAdmin: decoded.role === "ROLE_ADMIN",
-            tokenEmail: decoded.email,
-        });
-        localStorage.setItem("token", token);
-        localStorage.setItem("tokenEmail", decoded.email); //  E-Mail speichern
+        try {
+            const decoded: any = jwtDecode(token);
+            console.log(" Decoded Token Inhalt:", decoded); // 🔍 Zeigt alle Felder
 
+            if (!decoded.email) {
+                console.error(" Fehler: Token enthält keine `email`-Eigenschaft!");
+                console.warn(" Vielleicht heißt das Feld `sub` oder `username`?");
+                return;
+            }
+
+            localStorage.setItem("token", token);
+            localStorage.setItem("tokenEmail", decoded.email);
+
+            set({
+                token,
+                isAdmin: decoded.role === "ROLE_ADMIN",
+                tokenEmail: decoded.email,
+            });
+
+            console.log(" Token gespeichert:", localStorage.getItem("token"));
+            console.log(" Email gespeichert:", localStorage.getItem("tokenEmail"));
+        } catch (error) {
+            console.error(" Fehler beim Decodieren des Tokens:", error);
+        }
     },
+
+
 
     logout: () => {
         localStorage.removeItem("token");
@@ -37,16 +51,30 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
 
     restoreSession: () => {
+        console.log(" restoreSession gestartet...");
+
         const storedToken = localStorage.getItem("token");
         const storedEmail = localStorage.getItem("tokenEmail");
-        console.log("🔄 Sitzung wiederherstellen:", storedToken, storedEmail); // Debugging
+
+        console.log(" Gefundener Token:", storedToken);
+        console.log(" Gefundene Email:", storedEmail);
+
         if (storedToken && storedEmail) {
-            const decoded: any = jwtDecode(storedToken);
-            set({
-                token: storedToken,
-                isAdmin: decoded.role === "ROLE_ADMIN",
-                tokenEmail: storedEmail, //  E-Mail aus `localStorage`
-            });
+            try {
+                const decoded: any = jwtDecode(storedToken);
+                set({
+                    token: storedToken,
+                    isAdmin: decoded.role === "ROLE_ADMIN",
+                    tokenEmail: storedEmail,
+                });
+                console.log("Sitzung erfolgreich wiederhergestellt:", decoded);
+            } catch (error) {
+                console.error(" Fehler beim Wiederherstellen der Sitzung:", error);
+            }
+        } else {
+            console.warn(" Kein Token oder Email in localStorage gefunden.");
         }
     },
+
+
 }));

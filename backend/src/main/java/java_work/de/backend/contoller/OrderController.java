@@ -26,11 +26,6 @@ public class OrderController {
         return orderService.getUserOrders(userEmail);
     }
 
-//    @PutMapping("/{orderId}/status")
-//    public OrderDTO updateOrderStatus(@PathVariable String orderId, @RequestParam String status) {
-//        return orderService.updateOrderStatus(orderId, status);
-//    }
-
 //    @DeleteMapping("/{orderId}")
 //    public void cancelOrder(@PathVariable String orderId) {
 //        orderService.cancelOrder(orderId);

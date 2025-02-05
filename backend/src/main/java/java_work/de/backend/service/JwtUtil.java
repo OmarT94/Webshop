@@ -4,7 +4,7 @@ import io.jsonwebtoken.*;
 import java_work.de.backend.model.User;
 import org.springframework.stereotype.Service;
 import java.util.Date;
-import java.util.List;
+
 
 @Service
 public class JwtUtil {
@@ -16,6 +16,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role",role.name())
+                .claim("email",email)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 Stunden gültig
                 .signWith(JwtConfig.SECRET_KEY, SignatureAlgorithm.HS256)

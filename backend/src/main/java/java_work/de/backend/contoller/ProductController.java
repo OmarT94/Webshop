@@ -1,7 +1,6 @@
 package java_work.de.backend.contoller;
 import jakarta.validation.Valid;
 import java_work.de.backend.dto.ProductDTO;
-import java_work.de.backend.model.Product;
 import java_work.de.backend.service.ProductService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
