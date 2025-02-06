@@ -28,7 +28,7 @@ export type Address = {
 //  Hilfsfunktion für den Auth-Header
 const getAuthHeader = () => {
     const token = localStorage.getItem("token");
-    return { Authorization: `Bearer ${token}` };
+    return token? { Authorization: `Bearer ${token}` }:{};
 };
 
 //  Bestellungen eines Nutzers abrufen
@@ -43,11 +43,23 @@ export const getUserOrders = async (userEmail: string): Promise<Order[]> => {
 };
 
 //  Bestellung stornieren (nur für Nutzer)
-export const cancelOrder = async (orderId: string): Promise<void> => {
-    await axios.delete(`${API_URL}/${orderId}`, {
-        headers: getAuthHeader(),
-    });
+export const cancelOrder = async (orderId: string) => {
+    try {
+        const response = await axios.delete(`${API_URL}/${orderId}/cancel`, {
+            headers: {
+                ...getAuthHeader(),
+                "Content-Type": "application/json",
+            },
+        });
+        console.log(" Bestellung storniert:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error(" Fehler beim Stornieren der Bestellung:", error);
+        throw error;
+    }
 };
+
+
 
 // Alle Bestellungen abrufen (nur für Admins)
 export const getAllOrders = async (): Promise<Order[]> => {

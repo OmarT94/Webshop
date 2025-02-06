@@ -53,6 +53,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String email = jwtUtil.validateToken(token);
         String roleString = jwtUtil.getRoleFromToken(token); // Rolle aus Token extrahieren
 
+        System.out.println("Token-Email: " + email);
+        System.out.println("Token-Rolle: " + roleString);
+
         if (email != null && roleString != null && !roleString.isEmpty()) {
             SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleString); //  Rolle richtig setzen!
 

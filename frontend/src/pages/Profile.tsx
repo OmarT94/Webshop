@@ -53,16 +53,29 @@ export default function Profile() {
                         <p><strong>Gesamtpreis:</strong> {order.totalPrice} €</p>
                         {order.items.map((item) => (
                             <div key={item.productId}>
-                                <img src={item.imageBase64} alt={item.name} className="w-20 h-20" />
+                                <img src={item.imageBase64} alt={item.name} className="w-20 h-20"/>
                                 <p>{item.name} - {item.price} € x {item.quantity}</p>
                             </div>
                         ))}
                         <button
-                            onClick={() => cancelOrder(order.id)}
+                            onClick={async () => {
+                                try {
+                                    const message = await cancelOrder(order.id);
+                                    alert(message);
+                                    setOrders(orders.map(o =>
+                                        o.id === order.id ? {...o, orderStatus: "CANCELLED"} : o
+                                    ));
+                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                } catch (error) {
+                                    alert(" Bestellung konnte nicht storniert werden!");
+                                }
+                            }}
                             className="p-2 bg-red-500 text-white rounded mt-2"
+                            disabled={order.orderStatus === "SHIPPED"} // Falls versendet, Button deaktivieren
                         >
-                            Bestellung stornieren
+                            {order.orderStatus === "SHIPPED" ? "Nicht stornierbar" : "Bestellung stornieren"}
                         </button>
+
                     </div>
                 ))
             )}

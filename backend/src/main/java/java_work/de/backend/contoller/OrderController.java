@@ -3,8 +3,13 @@ package java_work.de.backend.contoller;
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
 import java_work.de.backend.service.OrderService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -26,10 +31,25 @@ public class OrderController {
         return orderService.getUserOrders(userEmail);
     }
 
-//    @DeleteMapping("/{orderId}")
-//    public void cancelOrder(@PathVariable String orderId) {
-//        orderService.cancelOrder(orderId);
-//    }
+    @DeleteMapping("/{orderId}/cancel")
+    public ResponseEntity<String> cancelOrder(@PathVariable String orderId) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println(" Benutzer versucht zu stornieren: " + userEmail);
+
+        boolean cancelled = orderService.cancelOrder(orderId, userEmail);
+
+        if (cancelled) {
+            return ResponseEntity.ok("Bestellung erfolgreich storniert!");
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(" Du darfst diese Bestellung nicht stornieren!");
+        }
+    }
+
+
+
+
+
+
 
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")

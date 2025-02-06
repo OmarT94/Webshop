@@ -60,10 +60,10 @@ public class SecurityConfig {
                         //  Admin darf alle Bestellungen verwalten:
                         .requestMatchers(HttpMethod.GET, "/api/orders").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/orders/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/orders/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/orders/{orderId}/cancel").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+
                         //  User kann eigene Bestellungen abrufen:
                         .requestMatchers(HttpMethod.GET, "/api/orders/{userEmail}").authenticated()
-
 
                         // Alle anderen Endpunkte benötigen eine Authentifizierung
                         .anyRequest().authenticated()

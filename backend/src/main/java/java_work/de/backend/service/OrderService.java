@@ -4,6 +4,7 @@ import java_work.de.backend.model.Address;
 import java_work.de.backend.model.Order;
 import java_work.de.backend.repo.OrderRepository;
 import org.bson.types.ObjectId;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,8 +56,31 @@ public class OrderService {
         return mapToDTO(orderRepository.save(updatedOrder));
     }
 
-    public void cancelOrder(String orderId) {
-        orderRepository.deleteById(orderId);
+    public boolean cancelOrder(String orderId, String userEmail) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException(" Bestellung mit ID " + orderId + " nicht gefunden!"));
+        System.out.println(" Token-Benutzer: " + userEmail);
+        System.out.println(" Bestellung gehört zu: " + order.userEmail());
+        if (!order.userEmail().equals(userEmail)) {
+            System.out.println(" Zugriff verweigert: Diese Bestellung gehört nicht dir!");
+            return false; //  Stornierung verweigern statt Exception zu werfen
+        }
+        if (order.orderStatus() == Order.OrderStatus.SHIPPED) {
+            return false; //  Bestellung kann nicht storniert werden
+        }
+        //  Bestellung auf "CANCELLED" setzen
+        Order updatedOrder = new Order(
+                order.id(),
+                order.userEmail(),
+                order.items(),
+                order.totalPrice(),
+                order.shippingAddress(),
+                order.paymentStatus(),
+                Order.OrderStatus.CANCELLED
+        );
+
+        orderRepository.save(updatedOrder);
+        return true;
     }
 
     public List<OrderDTO> getAllOrders() {
