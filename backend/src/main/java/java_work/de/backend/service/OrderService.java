@@ -61,16 +61,18 @@ public class OrderService {
     public boolean cancelOrder(String orderId, String userEmail) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException(" Bestellung mit ID " + orderId + " nicht gefunden!"));
-        logger.info(" Token-Benutzer: " + userEmail);
-        logger.info(" Bestellung gehört zu: " + order.userEmail());
+        logger.info(" Token-Benutzer: {}", userEmail);
+        logger.info(" Bestellung gehört zu: {}", order.userEmail());
         if (!order.userEmail().equals(userEmail)) {
-            logger.info(" Zugriff verweigert: Diese Bestellung gehört nicht dir!");
+            logger.warn(" Zugriff verweigert: Benutzer '{}' darf Bestellung '{}' nicht stornieren!", userEmail, order.id());
             return false; //  Stornierung verweigern statt Exception zu werfen
         }
         if (order.orderStatus() == Order.OrderStatus.SHIPPED) {
+            logger.warn(" Bestellung '{}' kann nicht storniert werden, da sie bereits versandt wurde!", order.id());
             return false; //  Bestellung kann nicht storniert werden
         }
-        //  Bestellung auf "CANCELLED" setzen
+        // Bestellung auf "CANCELLED" setzen
+        logger.info(" Bestellung '{}' wird storniert...", order.id());
         Order updatedOrder = new Order(
                 order.id(),
                 order.userEmail(),
@@ -82,6 +84,7 @@ public class OrderService {
         );
 
         orderRepository.save(updatedOrder);
+        logger.info(" Bestellung '{}' erfolgreich storniert!", order.id());
         return true;
     }
 

@@ -25,7 +25,7 @@ brauchen wir einen Filter, der bei jeder Anfrage den Token prüft.
 */
 
 public class JwtAuthFilter extends OncePerRequestFilter {
-    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
@@ -57,8 +57,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String email = jwtUtil.validateToken(token);
         String roleString = jwtUtil.getRoleFromToken(token); // Rolle aus Token extrahieren
 
-        logger.info("Token-Email: " + email);
-        logger.info("Token-Rolle: " + roleString);
+        logger.info(" Token validiert! Benutzer: '{}'", email);
+        logger.info(" Zugewiesene Rolle aus Token: '{}'", roleString);
+
 
         if (email != null && roleString != null && !roleString.isEmpty()) {
             SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleString); //  Rolle richtig setzen!
