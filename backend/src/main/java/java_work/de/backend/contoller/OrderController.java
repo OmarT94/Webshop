@@ -37,7 +37,8 @@ public class OrderController {
     @DeleteMapping("/{orderId}/cancel")
     public ResponseEntity<String> cancelOrder(@PathVariable String orderId) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        logger.info("Benutzer '{}' versucht, Bestellung '{}' zu stornieren.", userEmail, orderId);
+        logger.info("Ein Benutzer versucht, Bestellung '{}' zu stornieren.", orderId);
+
 
 
         boolean cancelled = orderService.cancelOrder(orderId, userEmail);
