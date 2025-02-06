@@ -4,7 +4,8 @@ import java_work.de.backend.model.Address;
 import java_work.de.backend.model.Order;
 import java_work.de.backend.repo.OrderRepository;
 import org.bson.types.ObjectId;
-import org.springframework.security.access.AccessDeniedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.NoSuchElementException;
 
 @Service
 public class OrderService {
+    private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
     private final OrderRepository orderRepository;
 
     public OrderService(OrderRepository orderRepository) {
@@ -59,10 +61,10 @@ public class OrderService {
     public boolean cancelOrder(String orderId, String userEmail) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException(" Bestellung mit ID " + orderId + " nicht gefunden!"));
-        System.out.println(" Token-Benutzer: " + userEmail);
-        System.out.println(" Bestellung gehört zu: " + order.userEmail());
+        logger.info(" Token-Benutzer: " + userEmail);
+        logger.info(" Bestellung gehört zu: " + order.userEmail());
         if (!order.userEmail().equals(userEmail)) {
-            System.out.println(" Zugriff verweigert: Diese Bestellung gehört nicht dir!");
+            logger.info(" Zugriff verweigert: Diese Bestellung gehört nicht dir!");
             return false; //  Stornierung verweigern statt Exception zu werfen
         }
         if (order.orderStatus() == Order.OrderStatus.SHIPPED) {
@@ -91,7 +93,7 @@ public class OrderService {
     }
     public OrderDTO updatePaymentStatus(String orderId, String paymentStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden"));
+                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
         Order.PaymentStatus newPaymentStatus = Order.PaymentStatus.valueOf(paymentStatus);
         Order updatedOrder = new Order(
                 order.id(),
@@ -108,7 +110,7 @@ public class OrderService {
 
     public OrderDTO updateShippingAddress(String orderId, Address newShippingAddress) {
         Order order =orderRepository.findById(orderId)
-                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden"));
+                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!!"));
         Order updatedOrder = new Order(
                 order.id(),
                 order.userEmail(),

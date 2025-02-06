@@ -30,6 +30,7 @@
         <java.version>21</java.version>
         <sonar.organization>omart94</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.coverage.exclusions>**/model/*.java,**/dto/*.java</sonar.coverage.exclusions>
     </properties>
     <dependencies>
         <dependency>
@@ -153,6 +154,7 @@
                     </execution>
                 </executions>
             </plugin>
+
 
         </plugins>
 

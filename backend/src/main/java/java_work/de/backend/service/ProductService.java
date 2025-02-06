@@ -81,16 +81,7 @@ private final ProductRepository productRepo;
                 product.imageBase64() //  Sende das Bild zurück ans Frontend
         );
     }
-//    private Product mapToEntity(ProductDTO productDTO) {
-//        return new Product(
-//                productDTO.id(),
-//                productDTO.name(),
-//                productDTO.description(),
-//                productDTO.price(),
-//                productDTO.stock(),
-//                productDTO.image()
-//        );
-//    }
+
 
     //Trennung von DTO und Entity
     //Klare Mapping-Methoden (mapToDTO, mapToEntity)

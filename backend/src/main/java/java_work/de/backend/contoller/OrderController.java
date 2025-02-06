@@ -3,6 +3,8 @@ package java_work.de.backend.contoller;
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
 import java_work.de.backend.service.OrderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
     private final OrderService orderService;
 
     public OrderController(OrderService orderService) {
@@ -34,7 +37,7 @@ public class OrderController {
     @DeleteMapping("/{orderId}/cancel")
     public ResponseEntity<String> cancelOrder(@PathVariable String orderId) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println(" Benutzer versucht zu stornieren: " + userEmail);
+        logger.info(" Benutzer versucht zu stornieren: " + userEmail);
 
         boolean cancelled = orderService.cancelOrder(orderId, userEmail);
 
@@ -44,11 +47,6 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(" Du darfst diese Bestellung nicht stornieren!");
         }
     }
-
-
-
-
-
 
 
     @GetMapping

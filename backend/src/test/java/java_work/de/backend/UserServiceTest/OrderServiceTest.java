@@ -30,8 +30,8 @@ class OrderServiceTest {
 
     private Order order;
     private OrderDTO orderDTO;
-    private final String ORDER_ID = new ObjectId().toString();
-    private final String USER_EMAIL = "user@example.com";
+    private final String orderId = new ObjectId().toString();
+    private final String userEmail = "user@example.com";
 
     @BeforeEach
     void setUp() {
@@ -40,8 +40,8 @@ class OrderServiceTest {
         Address address = new Address("Street", "City", "12345", "Country");
 
         order = new Order(
-                new ObjectId(ORDER_ID),
-                USER_EMAIL,
+                new ObjectId(orderId),
+                userEmail,
                 List.of(),
                 99.99,
                 address,
@@ -50,8 +50,8 @@ class OrderServiceTest {
         );
 
         orderDTO = new OrderDTO(
-                ORDER_ID,
-                USER_EMAIL,
+                orderId,
+                userEmail,
                 List.of(),
                 99.99,
                 address,
@@ -67,27 +67,27 @@ class OrderServiceTest {
         OrderDTO result = orderService.placeOrder(orderDTO);
 
         assertNotNull(result);
-        assertEquals(USER_EMAIL, result.userEmail());
+        assertEquals(userEmail, result.userEmail());
         assertEquals("PENDING", result.paymentStatus());
     }
 
     @Test
     void testGetUserOrders() {
-        when(orderRepository.findByUserEmail(USER_EMAIL)).thenReturn(List.of(order));
+        when(orderRepository.findByUserEmail(userEmail)).thenReturn(List.of(order));
 
-        List<OrderDTO> result = orderService.getUserOrders(USER_EMAIL);
+        List<OrderDTO> result = orderService.getUserOrders(userEmail);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(USER_EMAIL, result.get(0).userEmail());
+        assertEquals(userEmail, result.get(0).userEmail());
     }
 
     @Test
     void testUpdateOrderStatus() {
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrderDTO result = orderService.updateOrderStatus(ORDER_ID, "SHIPPED");
+        OrderDTO result = orderService.updateOrderStatus(orderId, "SHIPPED");
 
         assertNotNull(result);
         assertEquals("SHIPPED", result.orderStatus());
@@ -95,9 +95,9 @@ class OrderServiceTest {
 
     @Test
     void testCancelOrder_Success() {
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
-        boolean result = orderService.cancelOrder(ORDER_ID, USER_EMAIL);
+        boolean result = orderService.cancelOrder(orderId, userEmail);
 
         assertTrue(result);
         verify(orderRepository, times(1)).save(any(Order.class));
@@ -105,9 +105,9 @@ class OrderServiceTest {
 
     @Test
     void testCancelOrder_Failure_DifferentUser() {
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
-        boolean result = orderService.cancelOrder(ORDER_ID, "wrong@example.com");
+        boolean result = orderService.cancelOrder(orderId, "wrong@example.com");
 
         assertFalse(result);
         verify(orderRepository, never()).save(any(Order.class));
@@ -116,8 +116,8 @@ class OrderServiceTest {
     @Test
     void testCancelOrder_Failure_AlreadyShipped() {
         Order shippedOrder = new Order(
-                new ObjectId(ORDER_ID),
-                USER_EMAIL,
+                new ObjectId(orderId),
+                userEmail,
                 List.of(),
                 99.99,
                 order.shippingAddress(),
@@ -125,9 +125,9 @@ class OrderServiceTest {
                 Order.OrderStatus.SHIPPED
         );
 
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(shippedOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(shippedOrder));
 
-        boolean result = orderService.cancelOrder(ORDER_ID, USER_EMAIL);
+        boolean result = orderService.cancelOrder(orderId, userEmail);
 
         assertFalse(result);
         verify(orderRepository, never()).save(any(Order.class));
@@ -145,11 +145,11 @@ class OrderServiceTest {
 
     @Test
     void testUpdatePaymentStatus() {
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
 
-        OrderDTO result = orderService.updatePaymentStatus(ORDER_ID, "PAID");
+        OrderDTO result = orderService.updatePaymentStatus(orderId, "PAID");
 
         assertNotNull(result);
         assertEquals("PAID", result.paymentStatus());
@@ -159,12 +159,12 @@ class OrderServiceTest {
     void testUpdateShippingAddress() {
         Address newAddress = new Address("New Street", "New City", "67890", "New Country");
 
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
         //  Stelle sicher, dass das gespeicherte Objekt zurückgegeben wird!
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        OrderDTO result = orderService.updateShippingAddress(ORDER_ID, newAddress);
+        OrderDTO result = orderService.updateShippingAddress(orderId, newAddress);
 
         assertNotNull(result, " Das Ergebnis sollte nicht NULL sein!");
         assertEquals("New City", result.shippingAddress().city(), " Die Stadt wurde nicht korrekt aktualisiert!");
@@ -173,9 +173,9 @@ class OrderServiceTest {
 
     @Test
     void testDeleteOrder() {
-        doNothing().when(orderRepository).deleteById(ORDER_ID);
+        doNothing().when(orderRepository).deleteById(orderId);
 
-        assertDoesNotThrow(() -> orderService.deleteOrder(ORDER_ID));
-        verify(orderRepository, times(1)).deleteById(ORDER_ID);
+        assertDoesNotThrow(() -> orderService.deleteOrder(orderId));
+        verify(orderRepository, times(1)).deleteById(orderId);
     }
 }

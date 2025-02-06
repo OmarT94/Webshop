@@ -4,6 +4,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java_work.de.backend.contoller.OrderController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -22,6 +25,7 @@ brauchen wir einen Filter, der bei jeder Anfrage den Token prüft.
 */
 
 public class JwtAuthFilter extends OncePerRequestFilter {
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
@@ -53,8 +57,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String email = jwtUtil.validateToken(token);
         String roleString = jwtUtil.getRoleFromToken(token); // Rolle aus Token extrahieren
 
-        System.out.println("Token-Email: " + email);
-        System.out.println("Token-Rolle: " + roleString);
+        logger.info("Token-Email: " + email);
+        logger.info("Token-Rolle: " + roleString);
 
         if (email != null && roleString != null && !roleString.isEmpty()) {
             SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleString); //  Rolle richtig setzen!
