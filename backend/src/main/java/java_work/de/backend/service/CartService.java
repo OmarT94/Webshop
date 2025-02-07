@@ -7,6 +7,7 @@ import java_work.de.backend.repo.CartRepository;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +31,8 @@ public class CartService {
         Cart cart = cartRepository.findByUserEmail(userEmail)
                 .orElse(new Cart(new ObjectId(),userEmail, List.of()));
 
-        List<OrderItem> updateItems = List.of(item); //
+        List<OrderItem> updateItems = new ArrayList<>(cart.items()); //  eine veränderbare Liste!
+
         Optional<OrderItem> existingItem=updateItems.stream()
                 .filter(i ->i.productId().equals(item.productId()))
                 .findFirst();
@@ -61,6 +63,7 @@ public class CartService {
                 .map(item -> item.productId().equals(productId)
                 ?new OrderItem(item.productId(),item.name(),item.imageBase64(),quantity,item.price())
                         :item)
+                .filter(item -> item.quantity() > 0) //  Falls die Menge 0 ist, wird das Produkt entfernt!
                 .toList();
 
         Cart updatedCart=new Cart(cart.id(),userEmail,updateItems);
@@ -71,16 +74,22 @@ public class CartService {
 
     public void removeItem(String userEmail, String productId) {
         Cart cart = cartRepository.findByUserEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Warenkorb not found"));
+                .orElseThrow(() -> new RuntimeException("Warenkorb nicht gefunden"));
 
-        List<OrderItem> updatedItem =cart.items().stream()
-                .filter(item -> item.productId().equals(productId))
+        List<OrderItem> updatedItems = cart.items().stream()
+                .filter(item -> !item.productId().equals(productId)) //  Nur die übriggebliebenen Items behalten
                 .toList();
+
+        Cart updatedCart = new Cart(cart.id(), userEmail, updatedItems);
+        cartRepository.save(updatedCart); //  Aktualisierte Liste speichern!
     }
+
 
     public void clearCart(String userEmail) {
-        cartRepository.deleteById(userEmail);
+        cartRepository.findByUserEmail(userEmail)
+                .ifPresent(cart -> cartRepository.deleteById(cart.id().toString())); //  Lösche das Cart anhand der ObjectId!
     }
+
 
 
     private CartDTO mapTODTO(Cart cart) {
