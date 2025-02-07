@@ -26,7 +26,7 @@ public class CartService {
         return mapTODTO(cart);
     }
 
-    public CartDTO addCart(String userEmail, OrderItem item) {
+    public CartDTO addToCart(String userEmail, OrderItem item) {
         Cart cart = cartRepository.findByUserEmail(userEmail)
                 .orElse(new Cart(new ObjectId(),userEmail, List.of()));
 
