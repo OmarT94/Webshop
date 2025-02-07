@@ -17,6 +17,8 @@ export default function Navbar() {
                     </>
                 ) : (
                     <>
+                        <Link to="/cart">🛒 Warenkorb</Link> {/*  Warenkorb-Link hinzugefügt */}
+
                         <Link to="/profile">Profil</Link>
                         {isAdmin && (
                             <>

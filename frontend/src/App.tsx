@@ -9,6 +9,8 @@ import {useEffect, useState} from "react";
 import Profile from "./pages/Profile.tsx";
 import Navbar from "./components/Navbar.tsx";
 import Orders from "./pages/Orders.tsx";
+import Cart from "./pages/Cart.tsx";
+
 
 
 export default function App() {
@@ -32,6 +34,7 @@ export default function App() {
                     <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
                     <Route path="/manage" element={token ? <Manage /> : <Navigate to="/login" />} />
                     <Route path="/orders" element={token ? <Orders /> : <Home />} />
+                    <Route path="/cart" element={token ? <Cart /> : <Navigate to="/login" />} /> {/*  Warenkorb geschützt */}
                 </Routes>
             </div>
         </Router>
