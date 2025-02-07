@@ -2,20 +2,12 @@ import axios from "axios";
 
 const API_URL = "/api/orders";
 
-export type Order = {
-    id: string;
-    userEmail: string;
-    items: {
-        productId: string;
-        name: string;
-        imageBase64: string;
-        quantity: number;
-        price: number;
-    }[];
-    totalPrice: number;
-    shippingAddress: Address;
-    paymentStatus: "PAID" | "PENDING";
-    orderStatus: "PROCESSING" | "SHIPPED" | "CANCELLED";
+export type OrderItem = {
+    productId: string;
+    name: string;
+    imageBase64: string;
+    quantity: number;
+    price: number;
 };
 
 export type Address = {
@@ -23,6 +15,27 @@ export type Address = {
     city: string;
     postalCode: string;
     country: string;
+};
+
+export enum PaymentStatus {
+    PAID = "PAID",
+    PENDING = "PENDING",
+}
+
+export enum OrderStatus {
+    PROCESSING = "PROCESSING",
+    SHIPPED = "SHIPPED",
+    CANCELLED = "CANCELLED",
+}
+
+export type Order = {
+    id: string;
+    userEmail: string;
+    items: OrderItem[]; //  Eigener Typ für Bestellartikel
+    totalPrice: number;
+    shippingAddress: Address;
+    paymentStatus: PaymentStatus; //  Enum für Zahlungsstatus
+    orderStatus: OrderStatus; //  Enum für Bestellstatus
 };
 
 //  Hilfsfunktion für den Auth-Header
