@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getUserOrders, cancelOrder, Order } from "../api/orders";
+import {getUserOrders, cancelOrder, Order, OrderStatus} from "../api/orders";
 import { useAuthStore } from "../store/authStore";
 
 export default function Profile() {
@@ -10,42 +10,53 @@ export default function Profile() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        console.log(" restoreSession aufrufen...");
-        restoreSession(); //  Sicherstellen, dass die Sitzung geladen wird
-        setTimeout(() => setLoading(false), 200); // Warten, bis restoreSession durchläuft
+        restoreSession();
+        setTimeout(() => setLoading(false), 200);
     }, []);
 
     useEffect(() => {
         async function fetchOrders() {
             if (!token || !userEmail) {
-                console.warn(" Kein Token oder keine E-Mail vorhanden! Warte auf restoreSession...");
+                console.warn("Kein Token oder keine E-Mail vorhanden! Warte auf restoreSession...");
                 return;
             }
-
             try {
-                console.log(` Lade Bestellungen für ${userEmail}...`);
                 const data = await getUserOrders(userEmail);
-                console.log(" Bestellungen erhalten:", data);
                 setOrders(data);
             } catch (error) {
-                console.error(" Fehler beim Laden der Bestellungen:", error);
+                console.error("Fehler beim Laden der Bestellungen:", error);
             }
         }
-
         if (!loading) fetchOrders();
     }, [token, userEmail, loading]);
 
     if (loading) return <p>🔄 Lade Daten...</p>;
 
     if (!token || !userEmail) {
-        return <p> Bitte einloggen, um Bestellungen zu sehen.</p>;
+        return <p>Bitte einloggen, um Bestellungen zu sehen.</p>;
     }
+
+    const handleCancelOrder = async (orderId: string) => {
+        try {
+            const response = await cancelOrder(orderId);
+            alert(response); // Erfolg oder Fehlermeldung aus dem Backend anzeigen
+
+            setOrders(orders.map(order =>
+                order.id === orderId
+                    ? { ...order, orderStatus: OrderStatus.CANCELLED } //  Korrekt: Verwende das `OrderStatus`-Enum
+                    : order
+            ));
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            alert("Bestellung konnte nicht storniert werden!");
+        }
+    };
 
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold">Meine Bestellungen</h2>
             {orders.length === 0 ? (
-                <p> Keine Bestellungen gefunden.</p>
+                <p>Keine Bestellungen gefunden.</p>
             ) : (
                 orders.map((order) => (
                     <div key={order.id} className="p-4 border mt-4">
@@ -58,24 +69,14 @@ export default function Profile() {
                             </div>
                         ))}
                         <button
-                            onClick={async () => {
-                                try {
-                                    const message = await cancelOrder(order.id);
-                                    alert(message);
-                                    setOrders(orders.map(o =>
-                                        o.id === order.id ? {...o, orderStatus: "CANCELLED"} : o
-                                    ));
-                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                } catch (error) {
-                                    alert(" Bestellung konnte nicht storniert werden!");
-                                }
-                            }}
+                            onClick={() => handleCancelOrder(order.id)}
                             className="p-2 bg-red-500 text-white rounded mt-2"
-                            disabled={order.orderStatus === "SHIPPED"} // Falls versendet, Button deaktivieren
+                            disabled={order.orderStatus === "CANCELLED" || order.orderStatus === "SHIPPED"}
                         >
-                            {order.orderStatus === "SHIPPED" ? "Nicht stornierbar" : "Bestellung stornieren"}
+                            {order.orderStatus === "CANCELLED" ? "Bereits storniert" :
+                                order.orderStatus === "SHIPPED" ? "Nicht stornierbar" :
+                                    "Bestellung stornieren"}
                         </button>
-
                     </div>
                 ))
             )}

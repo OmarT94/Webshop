@@ -71,6 +71,9 @@ public class OrderService {
             logger.warn(" Bestellung '{}' kann nicht storniert werden, da sie bereits versandt wurde!", order.id());
             return false; //  Bestellung kann nicht storniert werden
         }
+        if (order.orderStatus() == Order.OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Bestellung wurde bereits storniert!");
+        }
         // Bestellung auf "CANCELLED" setzen
         logger.info(" Bestellung '{}' wird storniert...", order.id());
         Order updatedOrder = new Order(
@@ -80,7 +83,7 @@ public class OrderService {
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus(),
-                Order.OrderStatus.CANCELLED
+                Order.OrderStatus.CANCELLED // Setze den Status auf "CANCELLED"
         );
 
         orderRepository.save(updatedOrder);

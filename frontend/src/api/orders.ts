@@ -64,13 +64,13 @@ export const cancelOrder = async (orderId: string) => {
                 "Content-Type": "application/json",
             },
         });
-        console.log(" Bestellung storniert:", response.data);
-        return response.data;
+        return response.data; //  Gibt Erfolgsmeldung zurück
     } catch (error) {
-        console.error(" Fehler beim Stornieren der Bestellung:", error);
-        throw error;
+        console.error("Fehler beim Stornieren der Bestellung:", error);
+        throw new Error("Bestellung konnte nicht storniert werden.");
     }
 };
+
 
 
 

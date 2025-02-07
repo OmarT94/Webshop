@@ -31,7 +31,11 @@ export default function Products() {
                         <p className="text-gray-500">{product.description}</p>
                         <p className="text-green-600 font-bold">{product.price} €</p>
                         <button
-                            onClick={() => addItem(token!, userEmail!, { productId: product.id, name: product.name, imageBase64: product.imageBase64, quantity: 1, price: product.price })}
+                            onClick={() => addItem(token!, userEmail!, { productId: product.id,
+                                name: product.name,
+                                imageBase64: product.imageBase64,
+                                quantity: 1,
+                                price: product.price })}
                             className="mt-2 p-2 bg-blue-500 text-white rounded"
                         >
                             🛒 In den Warenkorb
