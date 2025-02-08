@@ -64,6 +64,9 @@ public class SecurityConfig {
                         //  User kann eigene Bestellungen abrufen:
                         .requestMatchers(HttpMethod.GET, "/api/orders/{userEmail}").authenticated()
 
+                        .requestMatchers(HttpMethod.POST, "/api/cart/**").authenticated()
+
+
                         // Alle anderen Endpunkte benötigen eine Authentifizierung
                         .anyRequest().authenticated()
 
