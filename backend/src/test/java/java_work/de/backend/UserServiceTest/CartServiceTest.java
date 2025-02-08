@@ -40,7 +40,7 @@ class CartServiceTest {
         testCart = new Cart(CART_ID, USER_EMAIL, List.of(testItem));
     }
 
-    /*  Teste getCart() Wenn kein Warenkorb existiert, wird einer erstellt */
+    // Teste getCart() Wenn kein Warenkorb existiert, wird einer erstellt
     @Test
     void testGetCart_WhenCartExists() {
         when(cartRepository.findByUserEmail(USER_EMAIL)).thenReturn(Optional.of(testCart)); //Simuliert, dass der Benutzer einen Warenkorb hat
@@ -65,7 +65,7 @@ class CartServiceTest {
         verify(cartRepository, times(1)).findByUserEmail(USER_EMAIL);
     }
 
-    /* Teste addToCart() Neues Produkt wird hinzugefügt */
+    // Teste addToCart() Neues Produkt wird hinzugefügt
     @Test
     void testAddToCart_WhenNewItemAdded() {
         when(cartRepository.findByUserEmail(USER_EMAIL)).thenReturn(Optional.of(testCart));
@@ -78,7 +78,7 @@ class CartServiceTest {
         verify(cartRepository, times(1)).save(any(Cart.class)); //Der Warenkorb wurde gespeichert
     }
 
-    /* Teste addToCart() Menge eines bestehenden Produkts wird erhöht */
+    // Teste addToCart() Menge eines bestehenden Produkts wird erhöht
     @Test
     void testAddToCart_WhenItemAlreadyExists() {
         when(cartRepository.findByUserEmail(USER_EMAIL)).thenReturn(Optional.of(testCart));
@@ -92,7 +92,7 @@ class CartServiceTest {
         verify(cartRepository, times(1)).save(any(Cart.class));
     }
 
-    /* Teste updateCartQuantity() Menge eines Produkts wird aktualisiert */
+    // Teste updateCartQuantity() Menge eines Produkts wird aktualisiert
     @Test
     void testUpdateCartQuantity() {
         when(cartRepository.findByUserEmail(USER_EMAIL)).thenReturn(Optional.of(testCart));
@@ -104,7 +104,7 @@ class CartServiceTest {
         verify(cartRepository, times(1)).save(any(Cart.class));
     }
 
-    /* Teste updateCartQuantity() Produkt wird entfernt, wenn Menge 0 */
+    // Teste updateCartQuantity() Produkt wird entfernt, wenn Menge 0
     @Test
     void testUpdateCartQuantity_RemoveItemIfZero() {
         when(cartRepository.findByUserEmail(USER_EMAIL)).thenReturn(Optional.of(testCart));
@@ -116,7 +116,7 @@ class CartServiceTest {
         verify(cartRepository, times(1)).save(any(Cart.class));
     }
 
-    /*Teste removeItem() Ein Produkt wird aus dem Warenkorb entfernt */
+    //Teste removeItem() Ein Produkt wird aus dem Warenkorb entfernt
     @Test
     void testRemoveItem() {
         when(cartRepository.findByUserEmail(USER_EMAIL)).thenReturn(Optional.of(testCart));
@@ -126,7 +126,7 @@ class CartServiceTest {
         verify(cartRepository, times(1)).save(any(Cart.class));
     }
 
-    /*Teste clearCart() Der gesamte Warenkorb wird gelöscht */
+    //Teste clearCart() Der gesamte Warenkorb wird gelöscht
     @Test
     void testClearCart() {
         when(cartRepository.findByUserEmail(USER_EMAIL)).thenReturn(Optional.of(testCart));

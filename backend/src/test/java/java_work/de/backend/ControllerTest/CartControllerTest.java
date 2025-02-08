@@ -1,4 +1,4 @@
-package java_work.de.backend.UserServiceTest;
+package java_work.de.backend.ControllerTest;
 
 import java_work.de.backend.contoller.CartController;
 import java_work.de.backend.dto.CartDTO;
@@ -48,7 +48,7 @@ class CartControllerTest {
 
     }
 
-    /* Teste GET /api/cart/{userEmail} */
+     //Teste GET /api/cart/{userEmail}
     @Test
     @WithMockUser(username = "test@gmail.com", roles = {"USER"}) // Simuliert eingeloggten Benutzer
     void testGetCart() throws Exception {
@@ -63,7 +63,7 @@ class CartControllerTest {
     }
 
 
-    /* Teste POST /api/cart/{userEmail}/add */
+    //Teste POST /api/cart/{userEmail}/add
     @Test
     @WithMockUser(username = "test@example.com", roles = {"USER"}) // Simuliert eingeloggten Benutzer
     void testAddToCart() throws Exception {
@@ -83,7 +83,7 @@ class CartControllerTest {
 
 
 
-    /* Teste PUT /api/cart/{userEmail}/update/{productId} */
+    // Teste PUT /api/cart/{userEmail}/update/{productId}
     @Test
     @WithMockUser(username = "test@example.com", roles = {"USER"}) // Simuliert eingeloggten Benutzer
     void testUpdateCartQuantity() throws Exception {
@@ -99,7 +99,7 @@ class CartControllerTest {
         verify(cartService, times(1)).updateCartQuantity(USER_EMAIL, PRODUCT_ID, 5);
     }
 
-    /* Teste DELETE /api/cart/{userEmail}/remove/{productId} */
+    // Teste DELETE /api/cart/{userEmail}/remove/{productId}
     @Test
     @WithMockUser(username = "test@example.com", roles = {"USER"}) // Simuliert eingeloggten Benutzer
     void testRemoveItem() throws Exception {
@@ -112,7 +112,7 @@ class CartControllerTest {
         verify(cartService, times(1)).removeItem(USER_EMAIL, PRODUCT_ID);
     }
 
-    /* Teste DELETE /api/cart/{userEmail}/clear */
+    // Teste DELETE /api/cart/{userEmail}/clear
     @Test
     @WithMockUser(username = "test@example.com", roles = {"USER"}) // Simuliert eingeloggten Benutzer
     void testClearCart() throws Exception {
