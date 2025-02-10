@@ -22,6 +22,13 @@ export enum PaymentStatus {
     PENDING = "PENDING",
 }
 
+export enum PaymentMethod {
+    PAYPAL = "PAYPAL",
+    KLARNA = "KLARNA",
+    CREDIT_CARD = "CREDIT_CARD",
+    BANK_TRANSFER = "BANK_TRANSFER",
+}
+
 export enum OrderStatus {
     PROCESSING = "PROCESSING",
     SHIPPED = "SHIPPED",
@@ -36,6 +43,7 @@ export type Order = {
     shippingAddress: Address;
     paymentStatus: PaymentStatus; //  Enum für Zahlungsstatus
     orderStatus: OrderStatus; //  Enum für Bestellstatus
+    paymentMethod: PaymentMethod;
 };
 
 //  Hilfsfunktion für den Auth-Header
@@ -45,8 +53,9 @@ const getAuthHeader = () => {
 };
 
 // Bestellungen eingeben
-export const checkout = async (token: string, userEmail: string, shippingAddress: Address) => {
-    const response = await axios.post(`${API_URL}/${userEmail}/checkout`, shippingAddress, {
+export const checkout = async (
+    token: string, userEmail: string, shippingAddress: Address,paymentMethod: string) => {
+    const response = await axios.post(`${API_URL}/${userEmail}/checkout`, {shippingAddress, paymentMethod}, {
         headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
@@ -54,6 +63,7 @@ export const checkout = async (token: string, userEmail: string, shippingAddress
 
 //  Bestellungen eines Nutzers abrufen
 export const getUserOrders = async (userEmail: string): Promise<Order[]> => {
+   try{
     const response = await axios.get(`${API_URL}/${userEmail}`, {
         headers: {
             ...getAuthHeader(),
@@ -61,6 +71,10 @@ export const getUserOrders = async (userEmail: string): Promise<Order[]> => {
         },
     });
     return response.data;
+   }catch(error){
+       console.error(" Fehler beim Checkout:", error);
+       throw new Error("Bestellung konnte nicht abgeschlossen werden.");
+   }
 };
 
 //  Bestellung stornieren (nur für Nutzer)
