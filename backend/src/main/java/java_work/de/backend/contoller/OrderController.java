@@ -2,6 +2,7 @@ package java_work.de.backend.contoller;
 
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
+import java_work.de.backend.model.CheckoutRequest;
 import java_work.de.backend.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,8 @@ public class OrderController {
     }
 
     @PostMapping("/{userEmail}/checkout")
-    public OrderDTO checkout(@PathVariable String userEmail, @RequestBody Address shippingAddress) {
-        return orderService.placeOrder(userEmail, shippingAddress);
+    public OrderDTO checkout(@PathVariable String userEmail, @RequestBody CheckoutRequest checkoutRequest) {
+        return orderService.placeOrder(userEmail, checkoutRequest.shippingAddress(), checkoutRequest.paymentMethod());
     }
 
     @GetMapping("/{userEmail}")
@@ -56,7 +57,7 @@ public class OrderController {
         return orderService.updateOrderStatus(orderId, status);
     }
 
-    @PutMapping("/{orderId}/payment")
+    @PutMapping("/{orderId}/payment-status")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public OrderDTO updatePaymentStatus(@PathVariable String orderId, @RequestParam String paymentStatus) {
         return orderService.updatePaymentStatus(orderId, paymentStatus);

@@ -24,19 +24,12 @@ public class OrderService {
         this.cartRepository = cartRepository;
     }
 
-//    public OrderDTO placeOrder(OrderDTO orderDTO) {
-//        Order newOrder = new Order(
-//                new ObjectId(),
-//                orderDTO.userEmail(),
-//                orderDTO.items(),
-//                orderDTO.totalPrice(),
-//                orderDTO.shippingAddress(),
-//                Order.PaymentStatus.PENDING, //  Standard: Zahlung ausstehend
-//                Order.OrderStatus.PROCESSING //  Standard: Bestellung wird bearbeitet
-//        );
-//        return mapToDTO(orderRepository.save(newOrder));
-//    }
-public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
+    /*
+      Bestellung aus dem Warenkorb aufgeben
+      Der Warenkorb wird geleert, nachdem die Bestellung erfolgreich erstellt wurde.
+      Der Benutzer muss eine gültige Zahlungsmethode wählen.
+     */
+public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paymentMethod) {
     Cart cart = cartRepository.findByUserEmail(userEmail)
             .orElseThrow(() -> new NoSuchElementException("Warenkorb ist leer!"));
 
@@ -48,6 +41,13 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
             .mapToDouble(item -> item.price() * item.quantity())
             .sum();
 
+    Order.PaymentMethod method;
+    try {
+        method = Order.PaymentMethod.valueOf(paymentMethod.toUpperCase()); // Zahlungsmethode validieren
+    } catch (IllegalArgumentException e) {
+        throw new IllegalStateException("Ungültige Zahlungsmethode: " + paymentMethod);
+    }
+
     Order newOrder = new Order(
             new ObjectId(),
             userEmail,
@@ -55,16 +55,18 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
             totalPrice,
             shippingAddress,
             Order.PaymentStatus.PENDING, //  Standard: Zahlung ausstehend
-            Order.OrderStatus.PROCESSING //  Standard: Bestellung wird bearbeitet
+            Order.OrderStatus.PROCESSING, //  Standard: Bestellung wird bearbeitet
+            method
     );
 
     Order savedOrder = orderRepository.save(newOrder);
-    cartRepository.deleteById(cart.id().toString());
+    cartRepository.deleteById(cart.id().toString());//  Warenkorb leeren nach Bestellung
 
     return mapToDTO(savedOrder);
 }
 
 
+//Bestellungen eines Benutzers abrufen
     public List<OrderDTO> getUserOrders(String userEmail) {
         return orderRepository.findByUserEmail(userEmail)
                 .stream()
@@ -72,11 +74,20 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 .toList();
     }
 
+    /*
+     Bestellstatus ändern ( PROCESSING - SHIPPED)
+     Nur Admin kann den Status ändern.
+     */
     public OrderDTO updateOrderStatus(String orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden"));
 
-        Order.OrderStatus newStatus = Order.OrderStatus.valueOf(status);
+        Order.OrderStatus newStatus;
+        try {
+            newStatus = Order.OrderStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Ungültiger Bestellstatus: " + status);
+        }
         Order updatedOrder = new Order(
                 order.id(),
                 order.userEmail(),
@@ -84,12 +95,18 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus(),
-                newStatus
+                newStatus,
+                order.paymentMethod()
         );
 
         return mapToDTO(orderRepository.save(updatedOrder));
     }
 
+
+    /*
+     Bestellung stornieren (nur wenn nicht versandt)
+     Der Benutzer kann eine Bestellung nur stornieren, wenn sie noch nicht versandt wurde.
+     */
     public boolean cancelOrder(String orderId, String userEmail) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException(" Bestellung mit ID " + orderId + " nicht gefunden!"));
@@ -115,7 +132,8 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus(),
-                Order.OrderStatus.CANCELLED // Setze den Status auf "CANCELLED"
+                Order.OrderStatus.CANCELLED,// Setze den Status auf "CANCELLED"
+                order.paymentMethod()
         );
 
         orderRepository.save(updatedOrder);
@@ -123,16 +141,28 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
         return true;
     }
 
+    /*
+      Alle Bestellungen abrufen (nur für Admins)
+     */
     public List<OrderDTO> getAllOrders() {
         return orderRepository.findAll()
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
     }
+
+    /*
+      Zahlungsstatus aktualisieren (nur Admin)
+     */
     public OrderDTO updatePaymentStatus(String orderId, String paymentStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
-        Order.PaymentStatus newPaymentStatus = Order.PaymentStatus.valueOf(paymentStatus);
+        Order.PaymentStatus newPaymentStatus;
+        try {
+            newPaymentStatus = Order.PaymentStatus.valueOf(paymentStatus.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Ungültiger Zahlungsstatus: " + paymentStatus);
+        }
         Order updatedOrder = new Order(
                 order.id(),
                 order.userEmail(),
@@ -140,12 +170,16 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 order.totalPrice(),
                 order.shippingAddress(),
                 newPaymentStatus,
-                order.orderStatus()
+                order.orderStatus(),
+                order.paymentMethod()
 
         );
         return mapToDTO(orderRepository.save(updatedOrder));
     }
 
+    /*
+      Lieferadresse aktualisieren
+    */
     public OrderDTO updateShippingAddress(String orderId, Address newShippingAddress) {
         Order order =orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!!"));
@@ -156,14 +190,22 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 order.totalPrice(),
                 newShippingAddress,
                 order.paymentStatus(),
-                order.orderStatus()
+                order.orderStatus(),
+                order.paymentMethod()
         );
         return mapToDTO(orderRepository.save(updatedOrder));
     }
+    /*
+      Bestellung löschen
+    */
     public void deleteOrder(String orderId) {
         orderRepository.deleteById(orderId);
     }
 
+
+    /*
+      Hilfsfunktion: Mapping von Order zu OrderDTO
+     */
     private OrderDTO mapToDTO(Order order) {
         return new OrderDTO(
                 order.id().toString(),
@@ -172,6 +214,7 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus().name(),
+                order.paymentMethod().name(),
                 order.orderStatus().name()
         );
     }
