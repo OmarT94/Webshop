@@ -2,7 +2,10 @@ package java_work.de.backend.UserServiceTest;
 
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
+import java_work.de.backend.model.Cart;
 import java_work.de.backend.model.Order;
+import java_work.de.backend.model.OrderItem;
+import java_work.de.backend.repo.CartRepository;
 import java_work.de.backend.repo.OrderRepository;
 import java_work.de.backend.service.OrderService;
 import org.bson.types.ObjectId;
@@ -25,6 +28,9 @@ class OrderServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private CartRepository cartRepository;
+
     @InjectMocks
     private OrderService orderService;
 
@@ -46,7 +52,8 @@ class OrderServiceTest {
                 99.99,
                 address,
                 Order.PaymentStatus.PENDING,
-                Order.OrderStatus.PROCESSING
+                Order.OrderStatus.PROCESSING,
+                Order.PaymentMethod.CREDIT_CARD
         );
 
         orderDTO = new OrderDTO(
@@ -56,20 +63,34 @@ class OrderServiceTest {
                 99.99,
                 address,
                 "PENDING",
-                "PROCESSING"
+                "PROCESSING",
+                "CREDIT_CARD"
         );
     }
 
-//    @Test
-//    void testPlaceOrder() {
-//        when(orderRepository.save(any(Order.class))).thenReturn(order);
-//
-//        OrderDTO result = orderService.placeOrder(orderDTO);
-//
-//        assertNotNull(result);
-//        assertEquals(userEmail, result.userEmail());
-//        assertEquals("PENDING", result.paymentStatus());
-//    }
+    @Test
+    void testPlaceOrder() {
+        Address shippingAddress = new Address("Street", "City", "12345", "Country");
+        String paymentMethod = "CREDIT_CARD";
+
+        Cart cart = new Cart(
+                new ObjectId(),
+                userEmail,
+                List.of(new OrderItem("prod123", "Test Produkt", "img.jpg", 2, 19.99)) // Ein Produkt hinzufügen
+        );
+
+        when(cartRepository.findByUserEmail(userEmail)).thenReturn(Optional.of(cart)); //  Mock für existierenden Warenkorb
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
+
+        OrderDTO result = orderService.placeOrder(userEmail, shippingAddress, paymentMethod);
+
+        assertNotNull(result);
+        assertEquals(userEmail, result.userEmail());
+        assertEquals(shippingAddress, result.shippingAddress());
+        assertEquals(paymentMethod,order.paymentMethod().name());
+    }
+
+
 
     @Test
     void testGetUserOrders() {
@@ -90,7 +111,7 @@ class OrderServiceTest {
         OrderDTO result = orderService.updateOrderStatus(orderId, "SHIPPED");
 
         assertNotNull(result);
-        assertEquals("SHIPPED", result.orderStatus());
+        assertEquals("SHIPPED",result.paymentMethod());
     }
 
     @Test
@@ -122,7 +143,8 @@ class OrderServiceTest {
                 99.99,
                 order.shippingAddress(),
                 Order.PaymentStatus.PAID,
-                Order.OrderStatus.SHIPPED
+                Order.OrderStatus.SHIPPED,
+                Order.PaymentMethod.PAYPAL
         );
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(shippedOrder));
