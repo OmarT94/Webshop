@@ -17,13 +17,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/*
-Damit Spring Security JWT automatisch verarbeitet,
-brauchen wir einen Filter, der bei jeder Anfrage den Token prüft.
-*/
+
+//Damit Spring Security JWT automatisch verarbeitet,
+//brauchen wir einen Filter, der bei jeder Anfrage den Token prüft.
+
 
 public class JwtAuthFilter extends OncePerRequestFilter {
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
@@ -55,8 +55,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String email = jwtUtil.validateToken(token);
         String roleString = jwtUtil.getRoleFromToken(token); // Rolle aus Token extrahieren
 
-        logger.info(" Token validiert! Benutzer: '{}'", email);
-        logger.info(" Zugewiesene Rolle aus Token: '{}'", roleString);
+        log.info(" Token validiert! Benutzer: '{}'", email);
+        log.info(" Zugewiesene Rolle aus Token: '{}'", roleString);
 
 
         if (email != null && roleString != null && !roleString.isEmpty()) {

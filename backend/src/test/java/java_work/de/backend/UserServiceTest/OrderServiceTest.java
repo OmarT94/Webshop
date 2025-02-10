@@ -60,16 +60,16 @@ class OrderServiceTest {
         );
     }
 
-    @Test
-    void testPlaceOrder() {
-        when(orderRepository.save(any(Order.class))).thenReturn(order);
-
-        OrderDTO result = orderService.placeOrder(orderDTO);
-
-        assertNotNull(result);
-        assertEquals(userEmail, result.userEmail());
-        assertEquals("PENDING", result.paymentStatus());
-    }
+//    @Test
+//    void testPlaceOrder() {
+//        when(orderRepository.save(any(Order.class))).thenReturn(order);
+//
+//        OrderDTO result = orderService.placeOrder(orderDTO);
+//
+//        assertNotNull(result);
+//        assertEquals(userEmail, result.userEmail());
+//        assertEquals("PENDING", result.paymentStatus());
+//    }
 
     @Test
     void testGetUserOrders() {

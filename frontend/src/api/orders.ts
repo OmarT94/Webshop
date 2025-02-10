@@ -44,6 +44,14 @@ const getAuthHeader = () => {
     return token? { Authorization: `Bearer ${token}` }:{};
 };
 
+// Bestellungen eingeben
+export const checkout = async (token: string, userEmail: string, shippingAddress: Address) => {
+    const response = await axios.post(`${API_URL}/${userEmail}/checkout`, shippingAddress, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+};
+
 //  Bestellungen eines Nutzers abrufen
 export const getUserOrders = async (userEmail: string): Promise<Order[]> => {
     const response = await axios.get(`${API_URL}/${userEmail}`, {

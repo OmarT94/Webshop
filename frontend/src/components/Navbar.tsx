@@ -17,13 +17,12 @@ export default function Navbar() {
                     </>
                 ) : (
                     <>
-                        <Link to="/cart">🛒 Warenkorb</Link> {/*  Warenkorb-Link hinzugefügt */}
-
+                        <Link to="/cart">🛒 Warenkorb</Link>
                         <Link to="/profile">Profil</Link>
+                        <Link to="/orders">Bestellungen</Link>
                         {isAdmin && (
                             <>
-                                <Link to="/manage">Manage</Link>
-                                <Link to="/orders">Bestellungen</Link> {/*  Orders-Seite */}
+                                <Link to="/manage">Admin-Bereich</Link>
                             </>
                         )}
                         <LogoutButton />

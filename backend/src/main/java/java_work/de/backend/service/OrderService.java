@@ -1,7 +1,9 @@
 package java_work.de.backend.service;
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
+import java_work.de.backend.model.Cart;
 import java_work.de.backend.model.Order;
+import java_work.de.backend.repo.CartRepository;
 import java_work.de.backend.repo.OrderRepository;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -15,23 +17,53 @@ import java.util.NoSuchElementException;
 public class OrderService {
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
     private final OrderRepository orderRepository;
+    private final CartRepository cartRepository;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, CartRepository cartRepository) {
         this.orderRepository = orderRepository;
+        this.cartRepository = cartRepository;
     }
 
-    public OrderDTO placeOrder(OrderDTO orderDTO) {
-        Order newOrder = new Order(
-                new ObjectId(),
-                orderDTO.userEmail(),
-                orderDTO.items(),
-                orderDTO.totalPrice(),
-                orderDTO.shippingAddress(),
-                Order.PaymentStatus.PENDING, //  Standard: Zahlung ausstehend
-                Order.OrderStatus.PROCESSING //  Standard: Bestellung wird bearbeitet
-        );
-        return mapToDTO(orderRepository.save(newOrder));
+//    public OrderDTO placeOrder(OrderDTO orderDTO) {
+//        Order newOrder = new Order(
+//                new ObjectId(),
+//                orderDTO.userEmail(),
+//                orderDTO.items(),
+//                orderDTO.totalPrice(),
+//                orderDTO.shippingAddress(),
+//                Order.PaymentStatus.PENDING, //  Standard: Zahlung ausstehend
+//                Order.OrderStatus.PROCESSING //  Standard: Bestellung wird bearbeitet
+//        );
+//        return mapToDTO(orderRepository.save(newOrder));
+//    }
+public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
+    Cart cart = cartRepository.findByUserEmail(userEmail)
+            .orElseThrow(() -> new NoSuchElementException("Warenkorb ist leer!"));
+
+    if (cart.items().isEmpty()) {
+        throw new IllegalStateException("Warenkorb ist leer, Bestellung nicht möglich.");
     }
+
+    double totalPrice = cart.items().stream()
+            .mapToDouble(item -> item.price() * item.quantity())
+            .sum();
+
+    Order newOrder = new Order(
+            new ObjectId(),
+            userEmail,
+            cart.items(),
+            totalPrice,
+            shippingAddress,
+            Order.PaymentStatus.PENDING, //  Standard: Zahlung ausstehend
+            Order.OrderStatus.PROCESSING //  Standard: Bestellung wird bearbeitet
+    );
+
+    Order savedOrder = orderRepository.save(newOrder);
+    cartRepository.deleteById(cart.id().toString());
+
+    return mapToDTO(savedOrder);
+}
+
 
     public List<OrderDTO> getUserOrders(String userEmail) {
         return orderRepository.findByUserEmail(userEmail)

@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
+import { useNavigate } from "react-router-dom"; //  Navigations-Hook für Checkout-Seite
 
 export default function Cart() {
     const { token } = useAuthStore();
     const userEmail = useAuthStore((state) => state.tokenEmail);
     const { items, totalPrice, fetchCart, updateItemQuantity, removeItem, clearCart } = useCartStore();
+    const navigate = useNavigate(); //  Navigation aktivieren
 
     useEffect(() => {
         if (token && userEmail) {
@@ -40,10 +42,26 @@ export default function Cart() {
                         </div>
                     ))}
 
-                    <div className="mt-6 flex justify-between items-center border-t pt-4">
+                    <div className="mt-6 flex flex-col items-center border-t pt-4">
                         <h3 className="text-xl font-bold">Gesamt: {totalPrice.toFixed(2)} €</h3>
-                        <button onClick={() => clearCart(token!, userEmail!)}
-                                className="p-2 bg-red-500 text-white rounded">🗑 Warenkorb leeren</button>
+
+                        <div className="flex gap-4 mt-4">
+                            <button onClick={() => clearCart(token!, userEmail!)}
+                                    className="p-2 bg-red-500 text-white rounded">🗑 Warenkorb leeren
+                            </button>
+
+                            {/*  Checkout-Button hinzugefügt */}
+                            <button
+                                onClick={() => {
+                                    console.log("Navigiere zur Checkout-Seite...");
+                                    navigate("/checkout");
+                                }}
+                                className="p-2 bg-green-500 text-white rounded"
+                            >
+                                Bestellung abschließen
+                            </button>
+
+                        </div>
                     </div>
                 </div>
             )}

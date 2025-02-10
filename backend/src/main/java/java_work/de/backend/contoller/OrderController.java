@@ -21,9 +21,9 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping
-    public OrderDTO placeOrder(@RequestBody OrderDTO orderDTO) {
-        return orderService.placeOrder(orderDTO);
+    @PostMapping("/{userEmail}/checkout")
+    public OrderDTO checkout(@PathVariable String userEmail, @RequestBody Address shippingAddress) {
+        return orderService.placeOrder(userEmail, shippingAddress);
     }
 
     @GetMapping("/{userEmail}")
