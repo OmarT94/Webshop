@@ -22,13 +22,6 @@ export enum PaymentStatus {
     PENDING = "PENDING",
 }
 
-export enum PaymentMethod {
-    PAYPAL = "PAYPAL",
-    KLARNA = "KLARNA",
-    CREDIT_CARD = "CREDIT_CARD",
-    BANK_TRANSFER = "BANK_TRANSFER",
-}
-
 export enum OrderStatus {
     PROCESSING = "PROCESSING",
     SHIPPED = "SHIPPED",
@@ -43,22 +36,13 @@ export type Order = {
     shippingAddress: Address;
     paymentStatus: PaymentStatus; //  Enum für Zahlungsstatus
     orderStatus: OrderStatus; //  Enum für Bestellstatus
-    paymentMethod: PaymentMethod;
+
 };
 
 //  Hilfsfunktion für den Auth-Header
 const getAuthHeader = () => {
     const token = localStorage.getItem("token");
     return token? { Authorization: `Bearer ${token}` }:{};
-};
-
-// Bestellungen eingeben
-export const checkout = async (
-    token: string, userEmail: string, shippingAddress: Address,paymentMethod: string) => {
-    const response = await axios.post(`${API_URL}/${userEmail}/checkout`, {shippingAddress, paymentMethod}, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-    return response.data;
 };
 
 //  Bestellungen eines Nutzers abrufen

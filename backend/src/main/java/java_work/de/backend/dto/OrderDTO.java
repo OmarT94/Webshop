@@ -12,6 +12,6 @@ public record OrderDTO(
         double totalPrice,
         Address shippingAddress,
         String paymentStatus, // "PAID" oder "PENDING"
-        String orderStatus ,// "PROCESSING", "SHIPPED", "CANCELLED"
-        String paymentMethod //  Zahlungsmethode als String
+        String orderStatus // "PROCESSING", "SHIPPED", "CANCELLED"
+
 ) {}

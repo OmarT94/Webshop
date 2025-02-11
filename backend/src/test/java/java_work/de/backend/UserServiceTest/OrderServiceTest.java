@@ -52,8 +52,8 @@ class OrderServiceTest {
                 99.99,
                 address,
                 Order.PaymentStatus.PENDING,
-                Order.OrderStatus.PROCESSING,
-                Order.PaymentMethod.CREDIT_CARD
+                Order.OrderStatus.PROCESSING
+
         );
 
         orderDTO = new OrderDTO(
@@ -63,15 +63,15 @@ class OrderServiceTest {
                 99.99,
                 address,
                 "PENDING",
-                "PROCESSING",
-                "CREDIT_CARD"
+                "PROCESSING"
+
         );
     }
 
     @Test
     void testPlaceOrder() {
         Address shippingAddress = new Address("Street", "City", "12345", "Country");
-        String paymentMethod = "CREDIT_CARD";
+
 
         Cart cart = new Cart(
                 new ObjectId(),
@@ -82,12 +82,12 @@ class OrderServiceTest {
         when(cartRepository.findByUserEmail(userEmail)).thenReturn(Optional.of(cart)); //  Mock für existierenden Warenkorb
         when(orderRepository.save(any(Order.class))).thenReturn(order);
 
-        OrderDTO result = orderService.placeOrder(userEmail, shippingAddress, paymentMethod);
+        OrderDTO result = orderService.placeOrder(userEmail, shippingAddress);
 
         assertNotNull(result);
         assertEquals(userEmail, result.userEmail());
         assertEquals(shippingAddress, result.shippingAddress());
-        assertEquals(paymentMethod,order.paymentMethod().name());
+
     }
 
 
@@ -111,7 +111,7 @@ class OrderServiceTest {
         OrderDTO result = orderService.updateOrderStatus(orderId, "SHIPPED");
 
         assertNotNull(result);
-        assertEquals("SHIPPED",result.paymentMethod());
+
     }
 
     @Test
@@ -143,8 +143,8 @@ class OrderServiceTest {
                 99.99,
                 order.shippingAddress(),
                 Order.PaymentStatus.PAID,
-                Order.OrderStatus.SHIPPED,
-                Order.PaymentMethod.PAYPAL
+                Order.OrderStatus.SHIPPED
+
         );
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(shippedOrder));

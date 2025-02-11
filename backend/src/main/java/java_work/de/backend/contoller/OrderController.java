@@ -2,7 +2,6 @@ package java_work.de.backend.contoller;
 
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
-import java_work.de.backend.model.CheckoutRequest;
 import java_work.de.backend.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +22,8 @@ public class OrderController {
     }
 
     @PostMapping("/{userEmail}/checkout")
-    public OrderDTO checkout(@PathVariable String userEmail, @RequestBody CheckoutRequest checkoutRequest) {
-        return orderService.placeOrder(userEmail, checkoutRequest.shippingAddress(), checkoutRequest.paymentMethod());
+    public OrderDTO checkout(@PathVariable String userEmail, @RequestBody Address shippingAddress) {
+        return orderService.placeOrder(userEmail, shippingAddress);
     }
 
     @GetMapping("/{userEmail}")

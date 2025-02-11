@@ -14,8 +14,8 @@ public record Order(
         double totalPrice, //  Gesamtpreis
         Address shippingAddress, //  Lieferadresse
         PaymentStatus paymentStatus, // Bezahlt oder ausstehend (nur Admin)
-        OrderStatus orderStatus, // Bestellstatus (nur Admin)
-        PaymentMethod paymentMethod //  Zahlungsmethode
+        OrderStatus orderStatus // Bestellstatus (nur Admin)
+
 ) {
     //  Enum für den Zahlungsstatus
     public enum PaymentStatus {
@@ -27,11 +27,7 @@ public record Order(
         PROCESSING, SHIPPED, CANCELLED
     }
 
-    public enum PaymentMethod {
-        PAYPAL,
-        KLARNA,
-        CREDIT_CARD,
-        BANK_TRANSFER }
+
 }
 
 

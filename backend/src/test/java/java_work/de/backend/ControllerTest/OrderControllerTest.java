@@ -3,7 +3,6 @@ package java_work.de.backend.ControllerTest;
 import java_work.de.backend.contoller.OrderController;
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
-import java_work.de.backend.model.CheckoutRequest;
 import java_work.de.backend.model.OrderItem;
 import java_work.de.backend.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +39,7 @@ class OrderControllerTest {
         // Mock-Daten für den Checkout
         String userEmail = "user@example.com";
         Address shippingAddress = new Address("Street", "City", "12345", "Country");
-        String paymentMethod = "PAYPAL";
+
 
         // Erwartetes Ergebnis nach Bestellung
         OrderDTO expectedOrder = new OrderDTO(
@@ -50,17 +49,17 @@ class OrderControllerTest {
                 99.98, // Gesamtpreis (2 x 49.99)
                 shippingAddress,
                 "PENDING",
-                "PROCESSING",
-                paymentMethod
+                "PROCESSING"
+
         );
 
         // Mock-Verhalten für den Service definieren
-        when(orderService.placeOrder(eq(userEmail), eq(shippingAddress), eq(paymentMethod)))
+        when(orderService.placeOrder(eq(userEmail), eq(shippingAddress)))
                 .thenReturn(expectedOrder);
 
         // Teste die Controller-Methode direkt
-        CheckoutRequest checkoutRequest = new CheckoutRequest(shippingAddress, paymentMethod);
-        OrderDTO result = orderController.checkout(userEmail, checkoutRequest);
+
+        OrderDTO result = orderController.checkout(userEmail,shippingAddress);
 
         // Assertions
         assertNotNull(result);
@@ -68,7 +67,7 @@ class OrderControllerTest {
         assertEquals(99.98, result.totalPrice());
         assertEquals("PENDING", result.paymentStatus());
         assertEquals("PROCESSING", result.orderStatus());
-        assertEquals(paymentMethod, result.paymentMethod());
+
     }
 
 
@@ -78,8 +77,8 @@ class OrderControllerTest {
                 99.99,
                 new Address("Street", "City", "12345", "Country"),
                 "PENDING",
-                "PROCESSING",
-                "PayPal");
+                "PROCESSING"
+                );
 
         when(orderService.getUserOrders("user@example.com")).thenReturn(List.of(orderDTO));
 
@@ -125,7 +124,7 @@ class OrderControllerTest {
 
     @Test
     void testGetAllOrders() {
-        OrderDTO orderDTO = new OrderDTO("1", "admin@example.com", List.of(), 200.00, new Address("Street", "City", "12345", "Country"), "PAID", "SHIPPED","Paypal");
+        OrderDTO orderDTO = new OrderDTO("1", "admin@example.com", List.of(), 200.00, new Address("Street", "City", "12345", "Country"), "PAID", "SHIPPED");
 
         when(orderService.getAllOrders()).thenReturn(List.of(orderDTO));
 
@@ -142,8 +141,8 @@ class OrderControllerTest {
                 99.99,
                 new Address("Street", "City", "12345", "Country"),
                 "PENDING",
-                "SHIPPED",
-                "paypal");
+                "SHIPPED"
+                );
 
         when(orderService.updateOrderStatus("1", "SHIPPED")).thenReturn(orderDTO);
 
@@ -159,8 +158,8 @@ class OrderControllerTest {
                 99.99,
                 new Address("Street", "City", "12345", "Country"),
                 "PAID",
-                "PROCESSING",
-                "PayPal");
+                "PROCESSING"
+                );
 
         when(orderService.updatePaymentStatus("1", "PAID")).thenReturn(orderDTO);
 
@@ -176,8 +175,8 @@ class OrderControllerTest {
         OrderDTO orderDTO = new OrderDTO("1", "user@example.com", List.of(),
                 99.99, newAddress,
                 "PENDING",
-                "PROCESSING",
-                "PayPal");
+                "PROCESSING"
+                );
 
         when(orderService.updateShippingAddress("1", newAddress)).thenReturn(orderDTO);
 

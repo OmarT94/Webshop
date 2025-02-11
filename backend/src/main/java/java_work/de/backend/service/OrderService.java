@@ -29,7 +29,7 @@ public class OrderService {
       Der Warenkorb wird geleert, nachdem die Bestellung erfolgreich erstellt wurde.
       Der Benutzer muss eine gültige Zahlungsmethode wählen.
      */
-public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paymentMethod) {
+public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
     Cart cart = cartRepository.findByUserEmail(userEmail)
             .orElseThrow(() -> new NoSuchElementException("Warenkorb ist leer!"));
 
@@ -41,12 +41,7 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paym
             .mapToDouble(item -> item.price() * item.quantity())
             .sum();
 
-    Order.PaymentMethod method;
-    try {
-        method = Order.PaymentMethod.valueOf(paymentMethod.toUpperCase()); // Zahlungsmethode validieren
-    } catch (IllegalArgumentException e) {
-        throw new IllegalStateException("Ungültige Zahlungsmethode: " + paymentMethod);
-    }
+
 
     Order newOrder = new Order(
             new ObjectId(),
@@ -55,8 +50,8 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paym
             totalPrice,
             shippingAddress,
             Order.PaymentStatus.PENDING, //  Standard: Zahlung ausstehend
-            Order.OrderStatus.PROCESSING, //  Standard: Bestellung wird bearbeitet
-            method
+            Order.OrderStatus.PROCESSING //  Standard: Bestellung wird bearbeitet
+
     );
 
     Order savedOrder = orderRepository.save(newOrder);
@@ -95,8 +90,8 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paym
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus(),
-                newStatus,
-                order.paymentMethod()
+                newStatus
+
         );
 
         return mapToDTO(orderRepository.save(updatedOrder));
@@ -132,8 +127,8 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paym
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus(),
-                Order.OrderStatus.CANCELLED,// Setze den Status auf "CANCELLED"
-                order.paymentMethod()
+                Order.OrderStatus.CANCELLED// Setze den Status auf "CANCELLED"
+
         );
 
         orderRepository.save(updatedOrder);
@@ -170,8 +165,8 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paym
                 order.totalPrice(),
                 order.shippingAddress(),
                 newPaymentStatus,
-                order.orderStatus(),
-                order.paymentMethod()
+                order.orderStatus()
+
 
         );
         return mapToDTO(orderRepository.save(updatedOrder));
@@ -190,8 +185,8 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paym
                 order.totalPrice(),
                 newShippingAddress,
                 order.paymentStatus(),
-                order.orderStatus(),
-                order.paymentMethod()
+                order.orderStatus()
+
         );
         return mapToDTO(orderRepository.save(updatedOrder));
     }
@@ -214,7 +209,6 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paym
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus().name(),
-                order.paymentMethod().name(),
                 order.orderStatus().name()
         );
     }
