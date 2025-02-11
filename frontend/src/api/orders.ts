@@ -36,6 +36,8 @@ export type Order = {
     shippingAddress: Address;
     paymentStatus: PaymentStatus; //  Enum für Zahlungsstatus
     orderStatus: OrderStatus; //  Enum für Bestellstatus
+    paymentMethod: "PAYPAL" | "KLARNA" | "CREDIT_CARD" | "BANK_TRANSFER" | "SOFORT" | "SEPA";
+    stripePaymentIntentId: string;
 
 };
 
@@ -43,6 +45,25 @@ export type Order = {
 const getAuthHeader = () => {
     const token = localStorage.getItem("token");
     return token? { Authorization: `Bearer ${token}` }:{};
+};
+
+//  Bestellung aufgeben (mit Stripe)
+export const checkout = async (
+    token: string,
+    userEmail: string,
+    paymentIntentId: string,
+    paymentMethod: string,
+    shippingAddress: Address
+): Promise<Order> => {
+    const response = await axios.post(
+        `${API_URL}/${userEmail}/checkout`,
+        shippingAddress,
+        {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { paymentIntentId, paymentMethod },
+        }
+    );
+    return response.data;
 };
 
 //  Bestellungen eines Nutzers abrufen
