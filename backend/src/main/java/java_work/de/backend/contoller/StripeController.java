@@ -16,6 +16,11 @@ public class StripeController {
         this.stripeService = stripeService;
     }
 
+
+    /*
+        Diese Route wird vom Frontend aufgerufen, um eine Zahlung mit Stripe zu starten
+        Gibt ein `clientSecret` zurück, das das Frontend für die Bezahlung benutzt
+    */
     @PostMapping("/create-payment-intent")
     public Map<String, String> createPaymentIntent(@RequestBody PaymentRequest request) throws StripeException {
         String clientSecret = stripeService.createPaymentIntent(request.amount(), request.currency(), request.paymentMethodType());

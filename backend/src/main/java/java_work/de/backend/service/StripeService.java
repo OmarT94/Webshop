@@ -18,9 +18,9 @@ public class StripeService {
 
     public String createPaymentIntent(double amount, String currency, String paymentMethodType) throws StripeException {
         PaymentIntentCreateParams.Builder paramsBuilder = PaymentIntentCreateParams.builder()
-                .setAmount((long) (amount * 100)) // Betrag in Cent
-                .setCurrency(currency)
-                .addPaymentMethodType(paymentMethodType) //  Diese Methode funktioniert in neueren Versionen
+                .setAmount((long) (amount * 100)) //  Betrag in Cent z.B. 10.99€ → 1099
+                .setCurrency(currency)//  Währung (EUR, USD, etc.)
+                .addPaymentMethodType(paymentMethodType) // Zahlungsmethode (z.B. "card", "sofort", "sepa_debit")
                 .setDescription("Bestellung in unserem Shop");
 
         PaymentIntent paymentIntent = PaymentIntent.create(paramsBuilder.build());

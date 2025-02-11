@@ -1,5 +1,6 @@
 package java_work.de.backend.contoller;
 
+import com.stripe.exception.StripeException;
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
 import java_work.de.backend.service.OrderService;
@@ -22,8 +23,11 @@ public class OrderController {
     }
 
     @PostMapping("/{userEmail}/checkout")
-    public OrderDTO checkout(@PathVariable String userEmail, @RequestBody Address shippingAddress) {
-        return orderService.placeOrder(userEmail, shippingAddress);
+    public OrderDTO checkout(@PathVariable String userEmail,
+                             @RequestParam String paymentIntentId,
+                             @RequestParam String paymentMethod,
+                             @RequestBody Address shippingAddress) throws StripeException {
+        return orderService.placeOrder(userEmail,shippingAddress,paymentMethod,paymentIntentId);
     }
 
     @GetMapping("/{userEmail}")
