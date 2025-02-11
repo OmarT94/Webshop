@@ -11,11 +11,15 @@ import { useNavigate } from "react-router-dom";
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 
 if (!stripeKey) {
-    console.error(" Stripe Public Key fehlt! Stelle sicher, dass die .env Datei geladen wird.");
+    console.error(" Stripe Public Key fehlt!");
 }
 
 const stripePromise = loadStripe(stripeKey);
 
+{/*
+ Dieser Code sendet eine Anfrage an das Backend, um eine Stripe-Zahlung zu starten.
+ Backend muss einen clientSecret für die Zahlung zurückgeben, den Stripe nutzt.
+*/}
 const fetchClientSecret = async () => {
     const token = useAuthStore.getState().token;
     const totalPrice = useCartStore.getState().totalPrice;
@@ -48,7 +52,7 @@ const fetchClientSecret = async () => {
 };
 
 
-
+{/* Stripe Elements als Wrapper geladen */}
 export default function Checkout() {
     return (
         <Elements stripe={stripePromise}>
@@ -90,9 +94,10 @@ function CheckoutForm() {
         setError(null);
 
         try {
-            //  1. Zahlung mit Stripe vorbereiten
+            //  Client Secret für Zahlung abrufen
             const clientSecret = await fetchClientSecret();
 
+            // Stripe-Zahlung ausführen
             const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, {
 
                 payment_method: {
@@ -100,20 +105,22 @@ function CheckoutForm() {
                 },
             });
 
+            //  Fehlerhandling für Stripe-Zahlung
             if (error) {
                 setError(error.message || "Zahlung fehlgeschlagen.");
                 setLoading(false);
                 return;
             }
 
-            //  2. Bestellung im Backend speichern
+            //  Falls Zahlung erfolgreich, Bestellung speichern
             if (paymentIntent?.id) {
                 await checkout(token!, userEmail!, paymentIntent.id, paymentMethod, shippingAddress);
                 clearCart(token!, userEmail!);
-                navigate("/orders"); //  Weiterleitung zur Bestellübersicht
+                navigate("/profile"); //  Weiterleitung zur Bestellübersicht
             } else {
                 setError("Zahlung fehlgeschlagen.");
             }
+
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err) {
             setError("Ein Fehler ist aufgetreten.");
