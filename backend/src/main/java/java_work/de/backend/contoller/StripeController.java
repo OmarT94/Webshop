@@ -23,7 +23,10 @@ public class StripeController {
     */
     @PostMapping("/create-payment-intent")
     public Map<String, String> createPaymentIntent(@RequestBody PaymentRequest request) throws StripeException {
-        String clientSecret = stripeService.createPaymentIntent(request.amount(), request.currency(), request.paymentMethodType());
+        String clientSecret = stripeService.createPaymentIntent(
+                request.amount(),
+                request.currency(),
+                request.paymentMethodType());
         return Map.of("clientSecret", clientSecret);
     }
 }

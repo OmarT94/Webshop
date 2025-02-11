@@ -10,6 +10,7 @@ import Cart from "./pages/Cart";
 import Navbar from "./components/Navbar";
 import { useAuthStore } from "./store/authStore";
 import { useEffect, useState } from "react";
+import Checkout from "./pages/Checkout.tsx";
 
 
 export default function App() {
@@ -40,7 +41,7 @@ export default function App() {
                     <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
                     <Route path="/cart" element={token ? <Cart /> : <Navigate to="/login" />} />
                     <Route path="/orders" element={token ? <Orders /> : <Navigate to="/login" />} />
-
+                    <Route path="/checkout" element={<Checkout />} />
 
                     {/* Admin-geschützte Seiten */}
                     <Route path="/manage" element={isAdmin ? <Manage /> : <Navigate to="/" />} />
