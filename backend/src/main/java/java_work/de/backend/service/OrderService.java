@@ -1,4 +1,7 @@
 package java_work.de.backend.service;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
 import java_work.de.backend.model.Cart;
@@ -8,6 +11,7 @@ import java_work.de.backend.repo.OrderRepository;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,18 +22,19 @@ public class OrderService {
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
-
-    public OrderService(OrderRepository orderRepository, CartRepository cartRepository) {
+   ;
+    public OrderService(OrderRepository orderRepository, CartRepository cartRepository, @Value("${stripe.secret.key}") String stripeSecretKey ) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
+       Stripe.apiKey = stripeSecretKey;
     }
 
     /*
-      Bestellung aus dem Warenkorb aufgeben
-      Der Warenkorb wird geleert, nachdem die Bestellung erfolgreich erstellt wurde.
-      Der Benutzer muss eine gültige Zahlungsmethode wählen.
-     */
-public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
+       Bestellung aufgeben (nur über Warenkorb)
+       Adresse & Stripe Payment Intent validieren
+       Zahlung muss erfolgreich sein, bevor Bestellung gespeichert wird
+    */
+public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paymentMethod,String paymentIntentId) throws StripeException {
     Cart cart = cartRepository.findByUserEmail(userEmail)
             .orElseThrow(() -> new NoSuchElementException("Warenkorb ist leer!"));
 
@@ -41,16 +46,29 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
             .mapToDouble(item -> item.price() * item.quantity())
             .sum();
 
-
-
+    // Zahlungsmethode überprüfen
+    Order.PaymentMethod method;
+    try {
+        method = Order.PaymentMethod.valueOf(paymentMethod.toUpperCase());
+    } catch (IllegalArgumentException e) {
+        throw new IllegalStateException("Ungültige Zahlungsmethode: " + paymentMethod);
+    }
+    //  Stripe-Zahlung validieren
+    PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
+    if (!"succeeded".equals(paymentIntent.getStatus())) {
+        throw new IllegalStateException("Zahlung fehlgeschlagen oder nicht bestätigt.");
+    }
+//  Bestellung speichern
     Order newOrder = new Order(
             new ObjectId(),
             userEmail,
             cart.items(),
             totalPrice,
             shippingAddress,
-            Order.PaymentStatus.PENDING, //  Standard: Zahlung ausstehend
-            Order.OrderStatus.PROCESSING //  Standard: Bestellung wird bearbeitet
+            Order.PaymentStatus.PAID, //  Zahlung war erfolgreich
+            Order.OrderStatus.PROCESSING, //  Standard: Bestellung wird bearbeitet
+            method,
+            paymentIntentId
 
     );
 
@@ -77,12 +95,7 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden"));
 
-        Order.OrderStatus newStatus;
-        try {
-            newStatus = Order.OrderStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Ungültiger Bestellstatus: " + status);
-        }
+
         Order updatedOrder = new Order(
                 order.id(),
                 order.userEmail(),
@@ -90,7 +103,9 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus(),
-                newStatus
+                Order.OrderStatus.valueOf(status.toUpperCase()),
+                order.paymentMethod(),
+                order.stripePaymentIntentId()
 
         );
 
@@ -127,7 +142,10 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus(),
-                Order.OrderStatus.CANCELLED// Setze den Status auf "CANCELLED"
+                Order.OrderStatus.CANCELLED, // Setze den Status auf "CANCELLED"
+                order.paymentMethod(),
+                order.stripePaymentIntentId()
+
 
         );
 
@@ -152,21 +170,17 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
     public OrderDTO updatePaymentStatus(String orderId, String paymentStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
-        Order.PaymentStatus newPaymentStatus;
-        try {
-            newPaymentStatus = Order.PaymentStatus.valueOf(paymentStatus.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Ungültiger Zahlungsstatus: " + paymentStatus);
-        }
+
         Order updatedOrder = new Order(
                 order.id(),
                 order.userEmail(),
                 order.items(),
                 order.totalPrice(),
                 order.shippingAddress(),
-                newPaymentStatus,
-                order.orderStatus()
-
+                Order.PaymentStatus.valueOf(paymentStatus.toUpperCase()),
+                order.orderStatus(),
+                order.paymentMethod(),
+                order.stripePaymentIntentId()
 
         );
         return mapToDTO(orderRepository.save(updatedOrder));
@@ -185,7 +199,9 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 order.totalPrice(),
                 newShippingAddress,
                 order.paymentStatus(),
-                order.orderStatus()
+                order.orderStatus(),
+                order.paymentMethod(),
+                order.stripePaymentIntentId()
 
         );
         return mapToDTO(orderRepository.save(updatedOrder));
@@ -209,7 +225,9 @@ public OrderDTO placeOrder(String userEmail, Address shippingAddress) {
                 order.totalPrice(),
                 order.shippingAddress(),
                 order.paymentStatus().name(),
-                order.orderStatus().name()
+                order.orderStatus().name(),
+                order.paymentMethod().name(),
+                order.stripePaymentIntentId()
         );
     }
 
