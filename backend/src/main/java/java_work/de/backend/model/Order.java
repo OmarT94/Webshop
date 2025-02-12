@@ -30,10 +30,8 @@ public record Order(
 
     // Enum für die Zahlungsmethode
     public enum PaymentMethod {
-        PAYPAL,
         KLARNA,
         CREDIT_CARD,
-        BANK_TRANSFER,
         SOFORT,
         SEPA
     }

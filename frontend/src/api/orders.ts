@@ -55,16 +55,25 @@ export const checkout = async (
     paymentMethod: string,
     shippingAddress: Address
 ): Promise<Order> => {
-    const response = await axios.post(
-        `${API_URL}/${userEmail}/checkout`,
-        shippingAddress,
-        {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { paymentIntentId, paymentMethod },
-        }
-    );
-    return response.data;
+    try {
+        const response = await axios.post(
+            `${API_URL}/${userEmail}/checkout`,
+            shippingAddress,  //  Nur shippingAddress im Body
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { paymentIntentId, paymentMethod } //  paymentIntentId als Query-Parameter senden
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(" Fehler beim Checkout:", error);
+        throw new Error(" Bestellung konnte nicht abgeschlossen werden.");
+    }
 };
+
+
+
 
 //  Bestellungen eines Nutzers abrufen
 export const getUserOrders = async (userEmail: string): Promise<Order[]> => {

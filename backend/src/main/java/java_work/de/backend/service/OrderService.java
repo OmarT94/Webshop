@@ -34,49 +34,55 @@ public class OrderService {
        Adresse & Stripe Payment Intent validieren
        Zahlung muss erfolgreich sein, bevor Bestellung gespeichert wird
     */
-public OrderDTO placeOrder(String userEmail, Address shippingAddress,String paymentMethod,String paymentIntentId) throws StripeException {
-    Cart cart = cartRepository.findByUserEmail(userEmail)
-            .orElseThrow(() -> new NoSuchElementException("Warenkorb ist leer!"));
+    public OrderDTO placeOrder(String userEmail, Address shippingAddress, String paymentMethod, String paymentIntentId) {
+        Cart cart = cartRepository.findByUserEmail(userEmail)
+                .orElseThrow(() -> new NoSuchElementException("Warenkorb ist leer!"));
 
-    if (cart.items().isEmpty()) {
-        throw new IllegalStateException("Warenkorb ist leer, Bestellung nicht möglich.");
+        if (cart.items().isEmpty()) {
+            throw new IllegalStateException("Warenkorb ist leer, Bestellung nicht möglich.");
+        }
+
+        double totalPrice = cart.items().stream()
+                .mapToDouble(item -> item.price() * item.quantity())
+                .sum();
+
+        //  Mapping von card → CREDIT_CARD
+        Order.PaymentMethod method;
+        switch (paymentMethod.toUpperCase()) {
+            case "CARD":
+            case "CREDIT_CARD":
+                method = Order.PaymentMethod.CREDIT_CARD;
+                break;
+            case "SOFORT":
+                method = Order.PaymentMethod.SOFORT;
+                break;
+            case "KLARNA":
+                method = Order.PaymentMethod.KLARNA;
+                break;
+            case "SEPA":
+                method = Order.PaymentMethod.SEPA;
+                break;
+            default:
+                throw new IllegalStateException(" Ungültige Zahlungsmethode: " + paymentMethod);
+        }
+
+        Order newOrder = new Order(
+                new ObjectId(),
+                userEmail,
+                cart.items(),
+                totalPrice,
+                shippingAddress,
+                Order.PaymentStatus.PENDING, //  Standard: Zahlung ausstehend
+                Order.OrderStatus.PROCESSING, //  Standard: Bestellung wird bearbeitet
+                method,
+                paymentIntentId // Speichert Stripe Payment Intent ID
+        );
+
+        Order savedOrder = orderRepository.save(newOrder);
+        cartRepository.deleteById(cart.id().toString()); //  Warenkorb leeren nach Bestellung
+
+        return mapToDTO(savedOrder);
     }
-
-    double totalPrice = cart.items().stream()
-            .mapToDouble(item -> item.price() * item.quantity())
-            .sum();
-
-    // Zahlungsmethode überprüfen
-    Order.PaymentMethod method;
-    try {
-        method = Order.PaymentMethod.valueOf(paymentMethod.toUpperCase());
-    } catch (IllegalArgumentException e) {
-        throw new IllegalStateException("Ungültige Zahlungsmethode: " + paymentMethod);
-    }
-    //  Stripe-Zahlung validieren
-    PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
-    if (!"succeeded".equals(paymentIntent.getStatus())) {
-        throw new IllegalStateException("Zahlung fehlgeschlagen oder nicht bestätigt.");
-    }
-//  Bestellung speichern
-    Order newOrder = new Order(
-            new ObjectId(),
-            userEmail,
-            cart.items(),
-            totalPrice,
-            shippingAddress,
-            Order.PaymentStatus.PAID, //  Zahlung war erfolgreich
-            Order.OrderStatus.PROCESSING, //  Standard: Bestellung wird bearbeitet
-            method,
-            paymentIntentId
-
-    );
-
-    Order savedOrder = orderRepository.save(newOrder);
-    cartRepository.deleteById(cart.id().toString());//  Warenkorb leeren nach Bestellung
-
-    return mapToDTO(savedOrder);
-}
 
 
 //Bestellungen eines Benutzers abrufen
