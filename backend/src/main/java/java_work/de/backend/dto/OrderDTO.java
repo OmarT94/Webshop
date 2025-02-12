@@ -14,6 +14,7 @@ public record OrderDTO(
         String paymentStatus, // "PAID" oder "PENDING"
         String orderStatus, // "PROCESSING", "SHIPPED", "CANCELLED"
         String paymentMethod, // Zahlungsmethode als String
-        String stripePaymentIntentId
+        String stripePaymentIntentId,
+        boolean returnRequested
 
 ) {}

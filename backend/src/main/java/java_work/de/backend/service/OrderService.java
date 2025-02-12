@@ -1,7 +1,8 @@
 package java_work.de.backend.service;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
-import com.stripe.model.PaymentIntent;
+import com.stripe.model.Refund;
+import com.stripe.param.RefundCreateParams;
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
 import java_work.de.backend.model.Cart;
@@ -75,8 +76,10 @@ public class OrderService {
                 Order.PaymentStatus.PENDING, //  Standard: Zahlung ausstehend
                 Order.OrderStatus.PROCESSING, //  Standard: Bestellung wird bearbeitet
                 method,
-                paymentIntentId // Speichert Stripe Payment Intent ID
+                paymentIntentId, // Speichert Stripe Payment Intent ID
+                false
         );
+
 
         Order savedOrder = orderRepository.save(newOrder);
         cartRepository.deleteById(cart.id().toString()); //  Warenkorb leeren nach Bestellung
@@ -111,7 +114,8 @@ public class OrderService {
                 order.paymentStatus(),
                 Order.OrderStatus.valueOf(status.toUpperCase()),
                 order.paymentMethod(),
-                order.stripePaymentIntentId()
+                order.stripePaymentIntentId(),
+                false
 
         );
 
@@ -150,7 +154,8 @@ public class OrderService {
                 order.paymentStatus(),
                 Order.OrderStatus.CANCELLED, // Setze den Status auf "CANCELLED"
                 order.paymentMethod(),
-                order.stripePaymentIntentId()
+                order.stripePaymentIntentId(),
+                false
 
 
         );
@@ -186,7 +191,8 @@ public class OrderService {
                 Order.PaymentStatus.valueOf(paymentStatus.toUpperCase()),
                 order.orderStatus(),
                 order.paymentMethod(),
-                order.stripePaymentIntentId()
+                order.stripePaymentIntentId(),
+                false
 
         );
         return mapToDTO(orderRepository.save(updatedOrder));
@@ -207,11 +213,84 @@ public class OrderService {
                 order.paymentStatus(),
                 order.orderStatus(),
                 order.paymentMethod(),
-                order.stripePaymentIntentId()
+                order.stripePaymentIntentId(),
+                false
 
         );
         return mapToDTO(orderRepository.save(updatedOrder));
     }
+
+    /*
+      Benutzer kann eine Rückgabe anfordern
+   */
+    public boolean requestReturn(String orderId, String userEmail) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
+
+        if (!order.userEmail().equals(userEmail)) {
+            throw new IllegalStateException("Diese Bestellung gehört nicht dir!");
+        }
+
+        if (order.orderStatus() != Order.OrderStatus.SHIPPED) {
+            throw new IllegalStateException("Rückgabe nur nach Versand möglich.");
+        }
+
+        Order updatedOrder = new Order(
+                order.id(),
+                order.userEmail(),
+                order.items(),
+                order.totalPrice(),
+                order.shippingAddress(),
+                order.paymentStatus(),
+                Order.OrderStatus.RETURN_REQUESTED,
+                order.paymentMethod(),
+                order.stripePaymentIntentId(),
+                true
+        );
+
+        orderRepository.save(updatedOrder);
+        return true;
+    }
+
+    /*
+      Admin kann eine Rückgabe genehmigen und erstatten
+   */
+    public boolean approveReturn(String orderId) throws StripeException {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
+
+        if (order.orderStatus() != Order.OrderStatus.RETURN_REQUESTED) {
+            throw new IllegalStateException("Keine Rückgabe-Anfrage für diese Bestellung.");
+        }
+
+        //  Stripe-Erstattung durchführen
+        RefundCreateParams params = RefundCreateParams.builder()
+                .setPaymentIntent(order.stripePaymentIntentId())
+                .setAmount((long) (order.totalPrice() * 100))
+                .build();
+
+        Refund.create(params);
+
+        //  Bestellung als zurückgegeben markieren
+        Order updatedOrder = new Order(
+                order.id(),
+                order.userEmail(),
+                order.items(),
+                order.totalPrice(),
+                order.shippingAddress(),
+                Order.PaymentStatus.REFUNDED,
+                Order.OrderStatus.RETURNED,
+                order.paymentMethod(),
+                order.stripePaymentIntentId(),
+                false
+        );
+
+        orderRepository.save(updatedOrder);
+        return true;
+    }
+
+
+
     /*
       Bestellung löschen
     */
@@ -233,7 +312,8 @@ public class OrderService {
                 order.paymentStatus().name(),
                 order.orderStatus().name(),
                 order.paymentMethod().name(),
-                order.stripePaymentIntentId()
+                order.stripePaymentIntentId(),
+                false
         );
     }
 

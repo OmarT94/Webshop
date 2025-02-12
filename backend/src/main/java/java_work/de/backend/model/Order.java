@@ -16,16 +16,17 @@ public record Order(
         PaymentStatus paymentStatus, // Bezahlt oder ausstehend (nur Admin)
         OrderStatus orderStatus, // Bestellstatus (nur Admin)
         PaymentMethod paymentMethod, //  Zahlungsmethode hinzugefügt
-        String stripePaymentIntentId // Stripe Payment Intent speichern
+        String stripePaymentIntentId, // Stripe Payment Intent speichern
+        boolean returnRequested //  Neue Spalte für Rückgabe-Anfrage
 ) {
     //  Enum für den Zahlungsstatus
     public enum PaymentStatus {
-        PAID, PENDING
+        PAID, PENDING,REFUNDED
     }
 
     // Enum für den Bestellstatus
     public enum OrderStatus {
-        PROCESSING, SHIPPED, CANCELLED
+        PROCESSING, SHIPPED, CANCELLED,RETURN_REQUESTED,RETURNED
     }
 
     // Enum für die Zahlungsmethode

@@ -35,7 +35,7 @@ public class OrderController {
         return orderService.getUserOrders(userEmail);
     }
 
-    @DeleteMapping("/{orderId}/cancel")
+    @PutMapping("/{orderId}/cancel")
     public ResponseEntity<String> cancelOrder(@PathVariable String orderId) {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         boolean cancelled = orderService.cancelOrder(orderId, userEmail);
@@ -44,6 +44,29 @@ public class OrderController {
             return ResponseEntity.ok("Bestellung erfolgreich storniert!");
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(" Du darfst diese Bestellung nicht stornieren!");
+        }
+    }
+
+    @PutMapping("/{orderId}/request-return")
+    public ResponseEntity<String> requestReturn(@PathVariable String orderId) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        boolean requested = orderService.requestReturn(orderId, userEmail);
+
+        if (requested) {
+            return ResponseEntity.ok("Rückgabeanfrage erfolgreich eingereicht!");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Rückgabeanfrage fehlgeschlagen!");
+        }
+    }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PutMapping("/{orderId}/approve-return")
+    public ResponseEntity<String> approveReturn(@PathVariable String orderId) throws StripeException {
+        boolean approved = orderService.approveReturn(orderId);
+
+        if (approved) {
+            return ResponseEntity.ok("Rückgabe wurde genehmigt und erstattet!");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Rückgabe konnte nicht genehmigt werden!");
         }
     }
 
