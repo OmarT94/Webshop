@@ -1,7 +1,6 @@
 package java_work.de.backend.service;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
-import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;
 import com.stripe.param.RefundCreateParams;
 import java_work.de.backend.dto.OrderDTO;
@@ -16,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -228,37 +228,64 @@ public class OrderService {
         orderRepository.deleteById(orderId);
     }
 
-    /*
-       Benutzer kann eine Rückgabe anfordern
-    */
+
+    //Benutzer kann eine Rückgabe anfordern
     public boolean requestReturn(String orderId, String userEmail) {
+        logger.info(" Prüfe Rückgabe für Bestellung: {}", orderId);
+        logger.info(" Benutzer: {}", userEmail);
+
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
+                .orElseThrow(() -> {
+                    logger.error(" Bestellung nicht gefunden: {}", orderId);
+                    return new NoSuchElementException("Bestellung nicht gefunden!");
+                });
 
-        if (!order.userEmail().equals(userEmail)) {
-            throw new IllegalStateException("Diese Bestellung gehört nicht dir!");
+        logger.info(" Bestellung gefunden! Bestellstatus: {}", order.orderStatus());
+
+        // E-Mail Vergleich mit Normalisierung
+        logger.info(" Erwartete Benutzer-E-Mail: {}", order.userEmail());
+        logger.info(" Tatsächliche Benutzer-E-Mail: {}", userEmail);
+
+        if (!order.userEmail().equalsIgnoreCase(userEmail.trim())) { // Case-Insensitive Vergleich
+            logger.warn(" Zugriff verweigert: Bestellung gehört nicht dem Benutzer!");
+            return false;
         }
 
-        if (order.orderStatus() != Order.OrderStatus.SHIPPED) {
-            throw new IllegalStateException("Rückgabe nur nach Versand möglich.");
+        // Status-Check für Rückgabe
+        logger.info(" Erwarteter Bestellstatus: SHIPPED");
+        logger.info(" Tatsächlicher Bestellstatus: {}", order.orderStatus());
+
+        if (order.orderStatus() != Order.OrderStatus.SHIPPED && order.orderStatus() != Order.OrderStatus.DELIVERED) {
+            logger.warn(" Rückgabe abgelehnt: Bestellung wurde nicht versandt oder ist bereits abgeschlossen!");
+            return false;
         }
 
-        Order updatedOrder = new Order(
-                order.id(),
-                order.userEmail(),
-                order.items(),
-                order.totalPrice(),
-                order.shippingAddress(),
-                order.paymentStatus(),
-                Order.OrderStatus.RETURN_REQUESTED,
-                order.paymentMethod(),
-                order.stripePaymentIntentId(),
-                true
-        );
+        try {
+            logger.info("🔄 Setze Bestellstatus auf RETURN_REQUESTED...");
+            Order updatedOrder = new Order(
+                    order.id(),
+                    order.userEmail(),
+                    order.items(),
+                    order.totalPrice(),
+                    order.shippingAddress(),
+                    order.paymentStatus(),
+                    Order.OrderStatus.RETURN_REQUESTED,
+                    order.paymentMethod(),
+                    order.stripePaymentIntentId(),
+                    true
+            );
 
-        orderRepository.save(updatedOrder);
-        return true;
+            orderRepository.save(updatedOrder);
+            logger.info(" Rückgabe erfolgreich gespeichert!");
+            return true;
+        } catch (Exception e) {
+            logger.error("Fehler beim Speichern der Bestellung: {}", e.getMessage());
+            return false;
+        }
     }
+
+
+
 
     /*
        Admin kann eine Rückgabe genehmigen und erstatten

@@ -26,7 +26,7 @@ public record Order(
 
     // Enum für den Bestellstatus
     public enum OrderStatus {
-        PROCESSING, SHIPPED, CANCELLED,RETURN_REQUESTED,RETURNED
+        PROCESSING, SHIPPED, CANCELLED,DELIVERED,RETURN_REQUESTED,RETURNED
     }
 
     // Enum für die Zahlungsmethode

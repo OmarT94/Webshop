@@ -108,13 +108,34 @@ export const cancelOrder = async (orderId: string) => {
 };
 
 //  Rückgabe beantragen
-export const requestReturn = async (token: string, orderId: string, userEmail: string): Promise<boolean> => {
-    const response = await axios.put(`${API_URL}/${orderId}/request-return`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { userEmail },
-    });
-    return response.data;
+export const requestReturn = async (token: string, orderId: string) => {
+    try {
+        console.log(" API-Call für `requestReturn`: Token:", token);
+        console.log(" API-Call für `requestReturn`: orderId:", orderId);
+
+        const response = await axios.put(
+            `${API_URL}/${orderId}/return-request`,
+            {}, // Kein Body benötigt
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        console.log("✅ Erfolgreiche Rückgabe-Anfrage:", response.data);
+        return true;
+    } catch (error: any) {
+        console.error(" Fehler bei requestReturn:", error.response?.data || error.message);
+        return false;
+    }
 };
+
+
+
+
+
 
 //  Admin genehmigt Rückgabe
 export const approveReturn = async (token: string, orderId: string): Promise<boolean> => {

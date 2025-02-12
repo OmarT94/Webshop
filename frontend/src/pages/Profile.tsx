@@ -55,12 +55,15 @@ export default function Profile() {
 
     const handleReturnRequest = async (orderId: string) => {
         if (!token) return;
+        console.log("📡 API-Call wird ausgeführt für Bestellung:", orderId);
+
         try {
-            const success = await requestReturn(token, orderId, userEmail!);
-            console.log("✅ Rückgabe angefordert:", success);
+            const success = await requestReturn(token, orderId);
+            console.log(" Rückgabe angefordert:", success);
+
             if (success) {
-                setOrders((prevOrders) =>
-                    prevOrders.map((order) =>
+                setOrders((order) =>
+                    order.map((order) =>
                         order.id === orderId
                             ? { ...order, orderStatus: OrderStatus.RETURN_REQUESTED }
                             : order

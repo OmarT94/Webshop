@@ -1,6 +1,7 @@
 package java_work.de.backend.service;
 
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,9 +21,8 @@ import java.util.List;
 
 @Configuration
 public class SecurityConfig {
-    private static final String ROLE_ADMIN = "ROLE_ADMIN"; //  Vermeidet Duplizierung!
-
-
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final String ROLE_ADMIN = "ROLE_ADMIN"; // Vermeidet Duplizierung!
 
     // `JwtAuthFilter` als Bean registrieren (Circular Dependency verhindern)
     @Bean
@@ -30,9 +30,10 @@ public class SecurityConfig {
         return new JwtAuthFilter(jwtUtil, userDetailsService, applicationContext);
     }
 
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter ) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+        logger.info("🔍 Lade Sicherheitskonfiguration..."); // Richtig platziert!
+
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
@@ -42,41 +43,38 @@ public class SecurityConfig {
                     config.setAllowCredentials(true);
                     return config;
                 }))
-                .csrf(AbstractHttpConfigurer::disable) // CSRF-Schutz deaktivieren (neue API)
-                // CSRF-Schutz ausschalten
-                .authorizeHttpRequests(auth -> auth
-                        // Authentifizierung für Auth-Routen erlauben
-                        // Lesen von Produkten (GET) ist jedem erlaubt
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() //  Registrierung und Login für alle freigeben
-                        // Admin-Endpunkte
-                       // .requestMatchers("/api/products/**").permitAll()   all users can add/delete/update
-                        .requestMatchers("/api/admin/**").hasAnyAuthority(ROLE_ADMIN)
-                        // Nur Admin darf Produkte erstellen, bearbeiten, löschen
-                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyAuthority(ROLE_ADMIN)
-                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority(ROLE_ADMIN)
-                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority(ROLE_ADMIN)
+                .csrf(AbstractHttpConfigurer::disable) // CSRF-Schutz deaktivieren
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
+                    auth.requestMatchers("/api/auth/register", "/api/auth/login").permitAll();
 
-                        //  Admin darf alle Bestellungen verwalten:
-                        .requestMatchers(HttpMethod.GET, "/api/orders").hasAuthority(ROLE_ADMIN)
-                        .requestMatchers(HttpMethod.PUT, "/api/orders/**").hasAuthority(ROLE_ADMIN)
-                        .requestMatchers(HttpMethod.DELETE, "/api/orders/{orderId}/cancel").hasAnyAuthority("ROLE_USER", ROLE_ADMIN)
+                    //  Admin-Rechte
+                    auth.requestMatchers("/api/admin/**").hasAnyAuthority(ROLE_ADMIN);
+                    auth.requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyAuthority(ROLE_ADMIN);
+                    auth.requestMatchers(HttpMethod.PUT, "/api/products/**").hasAnyAuthority(ROLE_ADMIN);
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAnyAuthority(ROLE_ADMIN);
 
-                        //  User kann eigene Bestellungen abrufen:
-                        .requestMatchers(HttpMethod.GET, "/api/orders/{userEmail}").authenticated()
+                    // Admin darf alle Bestellungen verwalten:
+                    auth.requestMatchers(HttpMethod.GET, "/api/orders").hasAuthority(ROLE_ADMIN);
+                    auth.requestMatchers(HttpMethod.PUT, "/api/orders/**").hasAuthority(ROLE_ADMIN);
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/orders/{orderId}/cancel").hasAnyAuthority("ROLE_USER", ROLE_ADMIN);
 
-                        .requestMatchers(HttpMethod.POST, "/api/cart/**").authenticated()
+                    //   Hier sind deine PUT-Regeln korrekt eingefügt!
+                    //   Debugging: Logge, ob die Sicherheitsregel greift
+                    logger.info("🛠️ Setze Sicherheitsregel für Rückgabe-Anfrage...");
+                    auth.requestMatchers(HttpMethod.PUT, "/api/orders/{orderId}/return-request").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN");
 
+                    //  User darf eigene Bestellungen abrufen:
+                    auth.requestMatchers(HttpMethod.GET, "/api/orders/{userEmail}").authenticated();
+                    auth.requestMatchers(HttpMethod.POST, "/api/cart/**").authenticated();
 
-                        // Alle anderen Endpunkte benötigen eine Authentifizierung
-                        .anyRequest().authenticated()
+                    //  Alle anderen Endpunkte benötigen Authentifizierung:
+                    auth.anyRequest().authenticated();
+                })
+                .httpBasic(httpBasic -> httpBasic.disable()) // `httpBasic()` korrekt deaktivieren
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-                )
-                .httpBasic(httpBasic -> httpBasic.disable())// `httpBasic()` korrekt deaktivieren
-                .addFilterBefore(jwtAuthFilter,UsernamePasswordAuthenticationFilter.class);
-
-
-
+        logger.info(" Sicherheitsregeln geladen!");
         return http.build();
     }
 
@@ -89,7 +87,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-
-
-
 }
