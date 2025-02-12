@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import {getUserOrders, cancelOrder, Order, OrderStatus} from "../api/orders";
+import {getUserOrders, cancelOrder, Order, OrderStatus, requestReturn} from "../api/orders";
 import { useAuthStore } from "../store/authStore";
+
 
 export default function Profile() {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -52,31 +53,69 @@ export default function Profile() {
         }
     };
 
+    const handleReturnRequest = async (orderId: string) => {
+        if (!token) return;
+        try {
+            const success = await requestReturn(token, orderId, userEmail!);
+            console.log("✅ Rückgabe angefordert:", success);
+            if (success) {
+                setOrders((prevOrders) =>
+                    prevOrders.map((order) =>
+                        order.id === orderId
+                            ? { ...order, orderStatus: OrderStatus.RETURN_REQUESTED }
+                            : order
+                    )
+                );
+            } else {
+                console.error(" requestReturn API-Call fehlgeschlagen!");
+            }
+        } catch (error) {
+            console.error(" Fehler bei requestReturn:", error);
+        }
+    };
+
     return (
         <div className="p-6">
-            <h2 className="text-2xl font-bold">Meine Bestellungen</h2>
+            <h2 className="text-2xl font-bold">📦 Meine Bestellungen</h2>
             {orders.length === 0 ? (
                 <p>Keine Bestellungen gefunden.</p>
             ) : (
                 orders.map((order) => (
                     <div key={order.id} className="p-4 border mt-4">
-                        <p><strong>Status:</strong> {order.orderStatus}</p>
-                        <p><strong>Gesamtpreis:</strong> {order.totalPrice} €</p>
+                        <p><strong>🛒 Status:</strong> {order.orderStatus}</p>
+                        <p><strong>💰 Gesamtpreis:</strong> {order.totalPrice} €</p>
                         {order.items.map((item) => (
-                            <div key={item.productId}>
+                            <div key={item.productId} className="flex gap-4 items-center">
                                 <img src={item.imageBase64} alt={item.name} className="w-20 h-20"/>
                                 <p>{item.name} - {item.price} € x {item.quantity}</p>
                             </div>
                         ))}
-                        <button
-                            onClick={() => handleCancelOrder(order.id)}
-                            className="p-2 bg-red-500 text-white rounded mt-2"
-                            disabled={order.orderStatus === "CANCELLED" || order.orderStatus === "SHIPPED"}
-                        >
-                            {order.orderStatus === "CANCELLED" ? "Bereits storniert" :
-                                order.orderStatus === "SHIPPED" ? "Nicht stornierbar" :
-                                    "Bestellung stornieren"}
-                        </button>
+
+                        <div className="mt-4 flex gap-4">
+                            <button
+                                onClick={() => handleCancelOrder(order.id)}
+                                className="p-2 bg-red-500 text-white rounded"
+                                disabled={order.orderStatus === OrderStatus.CANCELLED || order.orderStatus === OrderStatus.SHIPPED}
+                            >
+                                {order.orderStatus === OrderStatus.CANCELLED
+                                    ? " Bereits storniert"
+                                    : order.orderStatus === OrderStatus.SHIPPED
+                                        ? " Nicht stornierbar"
+                                        : " Bestellung stornieren"}
+                            </button>
+
+                            <button
+                                onClick={() => handleReturnRequest(order.id)}
+                                className="p-2 bg-blue-500 text-white rounded"
+                                disabled={order.orderStatus === OrderStatus.RETURN_REQUESTED || order.orderStatus === OrderStatus.SHIPPED}
+                            >
+                                {order.orderStatus === OrderStatus.RETURN_REQUESTED
+                                    ? " Rückgabe angefordert"
+                                    : order.orderStatus === OrderStatus.SHIPPED
+                                        ? " Nicht zurückgebbar"
+                                        : " Rückgabe anfordern"}
+                            </button>
+                        </div>
                     </div>
                 ))
             )}

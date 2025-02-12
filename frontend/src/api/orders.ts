@@ -26,6 +26,7 @@ export enum OrderStatus {
     PROCESSING = "PROCESSING",
     SHIPPED = "SHIPPED",
     CANCELLED = "CANCELLED",
+    RETURN_REQUESTED="RETURN_REQUESTED",
 }
 
 export type Order = {
@@ -104,6 +105,23 @@ export const cancelOrder = async (orderId: string) => {
         console.error("Fehler beim Stornieren der Bestellung:", error);
         throw new Error("Bestellung konnte nicht storniert werden.");
     }
+};
+
+//  Rückgabe beantragen
+export const requestReturn = async (token: string, orderId: string, userEmail: string): Promise<boolean> => {
+    const response = await axios.put(`${API_URL}/${orderId}/request-return`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { userEmail },
+    });
+    return response.data;
+};
+
+//  Admin genehmigt Rückgabe
+export const approveReturn = async (token: string, orderId: string): Promise<boolean> => {
+    const response = await axios.put(`${API_URL}/${orderId}/approve-return`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
 };
 
 
