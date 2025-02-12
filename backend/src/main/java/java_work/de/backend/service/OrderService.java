@@ -1,6 +1,7 @@
 package java_work.de.backend.service;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;
 import com.stripe.param.RefundCreateParams;
 import java_work.de.backend.dto.OrderDTO;
@@ -78,6 +79,7 @@ public class OrderService {
                 method,
                 paymentIntentId, // Speichert Stripe Payment Intent ID
                 false
+
         );
 
 
@@ -87,89 +89,10 @@ public class OrderService {
         return mapToDTO(savedOrder);
     }
 
-    /*  Benutzer kann eine Bestellung stornieren (nur wenn noch nicht versendet) */
-    public boolean cancelOrder(String orderId, String userEmail) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
-
-        if (!order.userEmail().equals(userEmail)) {
-            throw new IllegalStateException("Diese Bestellung gehört nicht dir!");
-        }
-
-        if (order.orderStatus() == Order.OrderStatus.SHIPPED) {
-            throw new IllegalStateException("Bestellung wurde bereits versendet, Stornierung nicht möglich.");
-        }
-
-        if (order.orderStatus() == Order.OrderStatus.CANCELLED) {
-            throw new IllegalStateException("Diese Bestellung wurde bereits storniert.");
-        }
-
-        Order updatedOrder = new Order(
-                order.id(),
-                order.userEmail(),
-                order.items(),
-                order.totalPrice(),
-                order.shippingAddress(),
-                order.paymentStatus(),
-                Order.OrderStatus.CANCELLED,
-                order.paymentMethod(),
-                order.stripePaymentIntentId(),
-                false
-        );
-
-        orderRepository.save(updatedOrder);
-        return true;
-    }
-
-    /*  Benutzer kann eine Rückgabe anfordern */
-    public boolean requestReturn(String orderId, String userEmail) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
-
-        if (!order.userEmail().equals(userEmail)) {
-            throw new IllegalStateException("Diese Bestellung gehört nicht dir!");
-        }
-
-        if (order.orderStatus() != Order.OrderStatus.SHIPPED) {
-            throw new IllegalStateException("Rückgabe nur nach Versand möglich.");
-        }
-
-        if (order.orderStatus() == Order.OrderStatus.RETURN_REQUESTED) {
-            throw new IllegalStateException("Rückgabe wurde bereits angefordert.");
-        }
-
-        Order updatedOrder = new Order(
-                order.id(),
-                order.userEmail(),
-                order.items(),
-                order.totalPrice(),
-                order.shippingAddress(),
-                order.paymentStatus(),
-                Order.OrderStatus.RETURN_REQUESTED,
-                order.paymentMethod(),
-                order.stripePaymentIntentId(),
-                true
-        );
-
-        orderRepository.save(updatedOrder);
-        return true;
-    }
 
 //Bestellungen eines Benutzers abrufen
     public List<OrderDTO> getUserOrders(String userEmail) {
         return orderRepository.findByUserEmail(userEmail)
-                .stream()
-                .map(this::mapToDTO)
-                .toList();
-    }
-
-    /// /////////ADMIN ////////
-
-    /*
-      Alle Bestellungen abrufen (nur für Admins)
-     */
-    public List<OrderDTO> getAllOrders() {
-        return orderRepository.findAll()
                 .stream()
                 .map(this::mapToDTO)
                 .toList();
@@ -199,6 +122,59 @@ public class OrderService {
         );
 
         return mapToDTO(orderRepository.save(updatedOrder));
+    }
+
+
+    /*
+     Bestellung stornieren (nur wenn nicht versandt)
+     Der Benutzer kann eine Bestellung nur stornieren, wenn sie noch nicht versandt wurde.
+     */
+    public boolean cancelOrder(String orderId, String userEmail) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException(" Bestellung mit ID " + orderId + " nicht gefunden!"));
+        logger.info(" Token-Benutzer: {}", userEmail);
+        logger.info(" Bestellung gehört zu: {}", order.userEmail());
+        if (!order.userEmail().equals(userEmail)) {
+            logger.warn(" Zugriff verweigert: Benutzer '{}' darf Bestellung '{}' nicht stornieren!", userEmail, order.id());
+            return false; //  Stornierung verweigern statt Exception zu werfen
+        }
+        if (order.orderStatus() == Order.OrderStatus.SHIPPED) {
+            logger.warn(" Bestellung '{}' kann nicht storniert werden, da sie bereits versandt wurde!", order.id());
+            return false; //  Bestellung kann nicht storniert werden
+        }
+        if (order.orderStatus() == Order.OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Bestellung wurde bereits storniert!");
+        }
+        // Bestellung auf "CANCELLED" setzen
+        logger.info(" Bestellung '{}' wird storniert...", order.id());
+        Order updatedOrder = new Order(
+                order.id(),
+                order.userEmail(),
+                order.items(),
+                order.totalPrice(),
+                order.shippingAddress(),
+                order.paymentStatus(),
+                Order.OrderStatus.CANCELLED, // Setze den Status auf "CANCELLED"
+                order.paymentMethod(),
+                order.stripePaymentIntentId(),
+                false
+
+
+        );
+
+        orderRepository.save(updatedOrder);
+        logger.info(" Bestellung '{}' erfolgreich storniert!", order.id());
+        return true;
+    }
+
+    /*
+      Alle Bestellungen abrufen (nur für Admins)
+     */
+    public List<OrderDTO> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
     }
 
     /*
@@ -245,8 +221,48 @@ public class OrderService {
         );
         return mapToDTO(orderRepository.save(updatedOrder));
     }
+    /*
+      Bestellung löschen
+    */
+    public void deleteOrder(String orderId) {
+        orderRepository.deleteById(orderId);
+    }
 
-    /*  Admin kann eine Rückgabe genehmigen und erstatten */
+    /*
+       Benutzer kann eine Rückgabe anfordern
+    */
+    public boolean requestReturn(String orderId, String userEmail) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
+
+        if (!order.userEmail().equals(userEmail)) {
+            throw new IllegalStateException("Diese Bestellung gehört nicht dir!");
+        }
+
+        if (order.orderStatus() != Order.OrderStatus.SHIPPED) {
+            throw new IllegalStateException("Rückgabe nur nach Versand möglich.");
+        }
+
+        Order updatedOrder = new Order(
+                order.id(),
+                order.userEmail(),
+                order.items(),
+                order.totalPrice(),
+                order.shippingAddress(),
+                order.paymentStatus(),
+                Order.OrderStatus.RETURN_REQUESTED,
+                order.paymentMethod(),
+                order.stripePaymentIntentId(),
+                true
+        );
+
+        orderRepository.save(updatedOrder);
+        return true;
+    }
+
+    /*
+       Admin kann eine Rückgabe genehmigen und erstatten
+    */
     public boolean approveReturn(String orderId) throws StripeException {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("Bestellung nicht gefunden!"));
@@ -255,16 +271,15 @@ public class OrderService {
             throw new IllegalStateException("Keine Rückgabe-Anfrage für diese Bestellung.");
         }
 
-        try {
-            RefundCreateParams params = RefundCreateParams.builder()
-                    .setPaymentIntent(order.stripePaymentIntentId())
-                    .setAmount((long) (order.totalPrice() * 100))
-                    .build();
-            Refund.create(params);
-        } catch (StripeException e) {
-            throw new IllegalStateException("Stripe-Erstattung fehlgeschlagen: " + e.getMessage());
-        }
+        //  Stripe-Erstattung durchführen
+        RefundCreateParams params = RefundCreateParams.builder()
+                .setPaymentIntent(order.stripePaymentIntentId())
+                .setAmount((long) (order.totalPrice() * 100))
+                .build();
 
+        Refund.create(params);
+
+        //  Bestellung als zurückgegeben markieren
         Order updatedOrder = new Order(
                 order.id(),
                 order.userEmail(),
@@ -282,12 +297,6 @@ public class OrderService {
         return true;
     }
 
-    /*
-      Bestellung löschen
-    */
-    public void deleteOrder(String orderId) {
-        orderRepository.deleteById(orderId);
-    }
 
     /*
       Hilfsfunktion: Mapping von Order zu OrderDTO

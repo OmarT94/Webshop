@@ -64,7 +64,6 @@ export const checkout = async (
                 params: { paymentIntentId, paymentMethod } //  paymentIntentId als Query-Parameter senden
             }
         );
-
         return response.data;
     } catch (error) {
         console.error(" Fehler beim Checkout:", error);
