@@ -1,10 +1,20 @@
 import { useEffect, useState } from "react";
-import { getAllOrders, updateOrderStatus, updatePaymentStatus, updateShippingAddress, deleteOrder, Order } from "../api/orders";
+import {
+    getAllOrders,
+    updateOrderStatus,
+    updatePaymentStatus,
+    updateShippingAddress,
+    deleteOrder,
+    Order,
+    approveReturn, PaymentStatus, OrderStatus
+} from "../api/orders";
 import { useAuthStore } from "../store/authStore";
 
 export default function Orders() {
     const [orders, setOrders] = useState<Order[]>([]);
     const isAdmin = useAuthStore((state) => state.isAdmin);
+
+
 
     useEffect(() => {
         async function fetchOrders() {
@@ -35,6 +45,35 @@ export default function Orders() {
         setOrders((prev) => prev.filter((o) => o.id !== orderId));
     };
 
+    //  Angepasste handleApproveReturn-Funktion
+    const handleApproveReturn = async (orderId: string) => {
+        const token = useAuthStore.getState().token; //  Token korrekt holen
+
+        if (!token) {
+            alert("Kein Authentifizierungs-Token verfügbar.");
+            return;
+        }
+
+        try {
+            const success = await approveReturn(token, orderId); //  Token statt isAdmin verwenden
+            if (success) {
+                setOrders((prev) =>
+                    prev.map((o) =>
+                        o.id === orderId
+                            ? { ...o, orderStatus: OrderStatus.RETURNED, paymentStatus: PaymentStatus.REFUNDED }
+                            : o
+                    )
+                );
+                alert("Rückgabe erfolgreich genehmigt und Erstattung ausgelöst.");
+            } else {
+                alert("Rückgabe konnte nicht genehmigt werden.");
+            }
+        } catch (error) {
+            console.error("Fehler beim Genehmigen der Rückgabe:", error);
+            alert("Es gab ein Problem beim Genehmigen der Rückgabe.");
+        }
+    };
+
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold">Bestellungen verwalten</h2>
@@ -46,16 +85,22 @@ export default function Orders() {
                     <p><strong>Gesamtpreis:</strong> {order.totalPrice} €</p>
 
                     <label>Bestellstatus:</label>
-                    <select onChange={(e) => handleStatusChange(order.id, e.target.value)} value={order.orderStatus}>
+                    <select
+                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                        value={order.orderStatus}
+                        disabled={order.orderStatus === "RETURN_REQUESTED" || order.orderStatus === "RETURNED"}
+                    >
                         <option value="PROCESSING">Bearbeitung</option>
                         <option value="SHIPPED">Versendet</option>
                         <option value="CANCELLED">Storniert</option>
                     </select>
 
+
                     <label>Zahlungsstatus:</label>
                     <select onChange={(e) => handlePaymentChange(order.id, e.target.value)} value={order.paymentStatus}>
                         <option value="PENDING">Ausstehend</option>
                         <option value="PAID">Bezahlt</option>
+                        <option value="REFUNDED">Erstattet</option>
                     </select>
 
                     <label>Lieferadresse:</label>
@@ -64,7 +109,7 @@ export default function Orders() {
                         placeholder="Straße"
                         value={order.shippingAddress.street}
                         onChange={(e) =>
-                            handleAddressChange(order.id, { ...order.shippingAddress, street: e.target.value })
+                            handleAddressChange(order.id, {...order.shippingAddress, street: e.target.value})
                         }
                     />
                     <input
@@ -72,7 +117,7 @@ export default function Orders() {
                         placeholder="Stadt"
                         value={order.shippingAddress.city}
                         onChange={(e) =>
-                            handleAddressChange(order.id, { ...order.shippingAddress, city: e.target.value })
+                            handleAddressChange(order.id, {...order.shippingAddress, city: e.target.value})
                         }
                     />
                     <input
@@ -80,7 +125,7 @@ export default function Orders() {
                         placeholder="PLZ"
                         value={order.shippingAddress.postalCode}
                         onChange={(e) =>
-                            handleAddressChange(order.id, { ...order.shippingAddress, postalCode: e.target.value })
+                            handleAddressChange(order.id, {...order.shippingAddress, postalCode: e.target.value})
                         }
                     />
                     <input
@@ -88,13 +133,24 @@ export default function Orders() {
                         placeholder="Land"
                         value={order.shippingAddress.country}
                         onChange={(e) =>
-                            handleAddressChange(order.id, { ...order.shippingAddress, country: e.target.value })
+                            handleAddressChange(order.id, {...order.shippingAddress, country: e.target.value})
                         }
                     />
 
-                    <button onClick={() => handleDeleteOrder(order.id)} className="p-2 bg-red-500 text-white rounded mt-2">
+                    <button onClick={() => handleDeleteOrder(order.id)}
+                            className="p-2 bg-red-500 text-white rounded mt-2">
                         Bestellung löschen
                     </button>
+
+                    {order.orderStatus === "RETURN_REQUESTED" && (
+                        <button
+                            onClick={() => handleApproveReturn(order.id)}
+                            className="p-2 bg-green-600 text-white rounded"
+                        >
+                            ✅ Rückgabe genehmigen & erstatten
+                        </button>
+                    )}
+
                 </div>
             ))}
         </div>

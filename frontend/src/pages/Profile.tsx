@@ -55,7 +55,7 @@ export default function Profile() {
 
     const handleReturnRequest = async (orderId: string) => {
         if (!token) return;
-        console.log("📡 API-Call wird ausgeführt für Bestellung:", orderId);
+        console.log(" API-Call wird ausgeführt für Bestellung:", orderId);
 
         try {
             const success = await requestReturn(token, orderId);
@@ -107,17 +107,17 @@ export default function Profile() {
                                         : " Bestellung stornieren"}
                             </button>
 
-                            <button
-                                onClick={() => handleReturnRequest(order.id)}
-                                className="p-2 bg-blue-500 text-white rounded"
-                                disabled={order.orderStatus === OrderStatus.RETURN_REQUESTED || order.orderStatus === OrderStatus.SHIPPED}
-                            >
-                                {order.orderStatus === OrderStatus.RETURN_REQUESTED
-                                    ? " Rückgabe angefordert"
-                                    : order.orderStatus === OrderStatus.SHIPPED
-                                        ? " Nicht zurückgebbar"
-                                        : " Rückgabe anfordern"}
-                            </button>
+
+
+                                {order.orderStatus === "SHIPPED" && (
+                                    <button
+                                        onClick={() => handleReturnRequest(order.id)}
+                                        className="p-2 bg-blue-500 text-white rounded"
+                                    >
+                                        🔄 Rückgabe anfordern
+                                    </button>
+                                )}
+
                         </div>
                     </div>
                 ))

@@ -1,7 +1,6 @@
 package java_work.de.backend.contoller;
 
 import com.stripe.exception.StripeException;
-import jakarta.servlet.http.HttpServletRequest;
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
 import java_work.de.backend.service.OrderService;
@@ -10,13 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
-import java.util.Collection;
+
 import java.util.List;
 
 @RestController
@@ -54,51 +51,17 @@ public class OrderController {
         }
     }
 
-
-    @PutMapping("/{orderId}/return-request")
+    @PutMapping("/{orderId}/return_request")
     public ResponseEntity<String> requestReturn(@PathVariable String orderId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        boolean success = orderService.requestReturn(orderId, userEmail);
+        if (success) {
+            return  ResponseEntity.ok("Rückgabe erfolgreich angefordert.");
+        }else {
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-            logger.error(" Benutzer ist nicht authentifiziert!");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nicht authentifiziert!");
-        }
-
-        // DEBUGGING: Logge alle Benutzer-Informationen
-        String userEmail = authentication.getName();
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-
-        logger.info(" Benutzer aus Security-Kontext: {}", userEmail);
-        logger.info(" Benutzerrollen: {}", authorities.stream().map(GrantedAuthority::getAuthority).toList());
-
-        boolean hasUserRole = authorities.stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_USER"));
-        boolean hasAdminRole = authorities.stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
-
-        logger.info(" Hat ROLE_USER? {}", hasUserRole);
-        logger.info(" Hat ROLE_ADMIN? {}", hasAdminRole);
-
-        if (!hasUserRole && !hasAdminRole) {
-            logger.error(" Benutzer hat keine erforderliche Rolle!");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Zugriff verweigert: ROLE_USER oder ROLE_ADMIN erforderlich!");
-        }
-
-        // TEST: Kann die Methode überhaupt aufgerufen werden?
-        logger.info(" requestReturn wurde aufgerufen für OrderID: {}", orderId);
-
-        boolean requested = orderService.requestReturn(orderId, userEmail);
-
-        if (requested) {
-            logger.info(" Rückgabe erfolgreich angefordert für Bestellung: {}", orderId);
-            return ResponseEntity.ok("Rückgabe erfolgreich angefordert!");
-        } else {
-            logger.warn(" Bestellung konnte nicht zurückgegeben werden!");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Rückgabe konnte nicht angefordert werden!");
+             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Rückgabe nicht erlaubt.");
         }
     }
-
-
-
-
 
     @PutMapping("/{orderId}/approve-return")
     public boolean approveReturn(@PathVariable String orderId) throws StripeException {

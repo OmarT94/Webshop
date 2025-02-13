@@ -231,57 +231,38 @@ public class OrderService {
 
     //Benutzer kann eine Rückgabe anfordern
     public boolean requestReturn(String orderId, String userEmail) {
-        logger.info(" Prüfe Rückgabe für Bestellung: {}", orderId);
-        logger.info(" Benutzer: {}", userEmail);
-
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> {
-                    logger.error(" Bestellung nicht gefunden: {}", orderId);
-                    return new NoSuchElementException("Bestellung nicht gefunden!");
-                });
+                .orElseThrow(() -> new NoSuchElementException(" Bestellung nicht gefunden!"));
 
-        logger.info(" Bestellung gefunden! Bestellstatus: {}", order.orderStatus());
+        logger.info(" Prüfe Benutzer: '{}'", userEmail);
+        logger.info(" Bestellung gehört zu: '{}'", order.userEmail());
 
-        // E-Mail Vergleich mit Normalisierung
-        logger.info(" Erwartete Benutzer-E-Mail: {}", order.userEmail());
-        logger.info(" Tatsächliche Benutzer-E-Mail: {}", userEmail);
-
-        if (!order.userEmail().equalsIgnoreCase(userEmail.trim())) { // Case-Insensitive Vergleich
-            logger.warn(" Zugriff verweigert: Bestellung gehört nicht dem Benutzer!");
-            return false;
+        if (!order.userEmail().equalsIgnoreCase(userEmail)) {
+            logger.warn(" Rückgabe nicht erlaubt: Benutzer stimmt nicht überein!");
+            throw new IllegalStateException(" Rückgabe nicht erlaubt: Falscher Benutzer!");
         }
 
-        // Status-Check für Rückgabe
-        logger.info(" Erwarteter Bestellstatus: SHIPPED");
-        logger.info(" Tatsächlicher Bestellstatus: {}", order.orderStatus());
-
-        if (order.orderStatus() != Order.OrderStatus.SHIPPED && order.orderStatus() != Order.OrderStatus.DELIVERED) {
-            logger.warn(" Rückgabe abgelehnt: Bestellung wurde nicht versandt oder ist bereits abgeschlossen!");
-            return false;
+        if (order.orderStatus() != Order.OrderStatus.SHIPPED) {
+            logger.warn(" Rückgabe nicht erlaubt: Bestellung nicht versandt!");
+            throw new IllegalStateException(" Rückgabe nur nach Versand erlaubt!");
         }
 
-        try {
-            logger.info("🔄 Setze Bestellstatus auf RETURN_REQUESTED...");
-            Order updatedOrder = new Order(
-                    order.id(),
-                    order.userEmail(),
-                    order.items(),
-                    order.totalPrice(),
-                    order.shippingAddress(),
-                    order.paymentStatus(),
-                    Order.OrderStatus.RETURN_REQUESTED,
-                    order.paymentMethod(),
-                    order.stripePaymentIntentId(),
-                    true
-            );
+        Order updatedOrder = new Order(
+                order.id(),
+                order.userEmail(),
+                order.items(),
+                order.totalPrice(),
+                order.shippingAddress(),
+                order.paymentStatus(),
+                Order.OrderStatus.RETURN_REQUESTED,
+                order.paymentMethod(),
+                order.stripePaymentIntentId(),
+                true
+        );
 
-            orderRepository.save(updatedOrder);
-            logger.info(" Rückgabe erfolgreich gespeichert!");
-            return true;
-        } catch (Exception e) {
-            logger.error("Fehler beim Speichern der Bestellung: {}", e.getMessage());
-            return false;
-        }
+        orderRepository.save(updatedOrder);
+        logger.info(" Rückgabe erfolgreich angefordert!");
+        return true;
     }
 
 
@@ -298,7 +279,7 @@ public class OrderService {
             throw new IllegalStateException("Keine Rückgabe-Anfrage für diese Bestellung.");
         }
 
-        //  Stripe-Erstattung durchführen
+        // Stripe-Erstattung durchführen
         RefundCreateParams params = RefundCreateParams.builder()
                 .setPaymentIntent(order.stripePaymentIntentId())
                 .setAmount((long) (order.totalPrice() * 100))
@@ -306,15 +287,15 @@ public class OrderService {
 
         Refund.create(params);
 
-        //  Bestellung als zurückgegeben markieren
+        // Bestellung als zurückgegeben markieren + Zahlungsstatus auf REFUNDED
         Order updatedOrder = new Order(
                 order.id(),
                 order.userEmail(),
                 order.items(),
                 order.totalPrice(),
                 order.shippingAddress(),
-                Order.PaymentStatus.REFUNDED,
-                Order.OrderStatus.RETURNED,
+                Order.PaymentStatus.REFUNDED, //  Geändert: Zahlungsstatus auf REFUNDED
+                Order.OrderStatus.RETURNED,   //  Geändert: Bestellstatus auf RETURNED
                 order.paymentMethod(),
                 order.stripePaymentIntentId(),
                 false

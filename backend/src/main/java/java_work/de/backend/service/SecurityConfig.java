@@ -61,8 +61,8 @@ public class SecurityConfig {
 
                     //   Hier sind deine PUT-Regeln korrekt eingefügt!
                     //   Debugging: Logge, ob die Sicherheitsregel greift
-                    logger.info("🛠️ Setze Sicherheitsregel für Rückgabe-Anfrage...");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/orders/{orderId}/return-request").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN");
+                    logger.info("🛠 Setze Sicherheitsregel für Rückgabe-Anfrage...");
+                    auth.requestMatchers(HttpMethod.PUT, "/api/orders/{orderId}/return_request").authenticated();
 
                     //  User darf eigene Bestellungen abrufen:
                     auth.requestMatchers(HttpMethod.GET, "/api/orders/{userEmail}").authenticated();

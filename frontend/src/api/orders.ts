@@ -20,6 +20,7 @@ export type Address = {
 export enum PaymentStatus {
     PAID = "PAID",
     PENDING = "PENDING",
+    REFUNDED = "REFUNDED"
 }
 
 export enum OrderStatus {
@@ -27,6 +28,7 @@ export enum OrderStatus {
     SHIPPED = "SHIPPED",
     CANCELLED = "CANCELLED",
     RETURN_REQUESTED="RETURN_REQUESTED",
+    RETURNED="RETURNED",
 }
 
 export type Order = {
@@ -110,11 +112,11 @@ export const cancelOrder = async (orderId: string) => {
 //  Rückgabe beantragen
 export const requestReturn = async (token: string, orderId: string) => {
     try {
-        console.log(" API-Call für `requestReturn`: Token:", token);
-        console.log(" API-Call für `requestReturn`: orderId:", orderId);
+        console.log("API-Call für `requestReturn`: Token:", token);
+        console.log("API-Call für `requestReturn`: orderId:", orderId);
 
         const response = await axios.put(
-            `${API_URL}/${orderId}/return-request`,
+            `${API_URL}/${orderId}/return_request`,
             {}, // Kein Body benötigt
             {
                 headers: {
@@ -124,10 +126,10 @@ export const requestReturn = async (token: string, orderId: string) => {
             }
         );
 
-        console.log("✅ Erfolgreiche Rückgabe-Anfrage:", response.data);
+        console.log(" Erfolgreiche Rückgabe-Anfrage:", response.data);
         return true;
     } catch (error: any) {
-        console.error(" Fehler bei requestReturn:", error.response?.data || error.message);
+        console.error("Fehler bei requestReturn:", error.response?.data || error.message);
         return false;
     }
 };
