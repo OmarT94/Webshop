@@ -75,8 +75,6 @@ export const checkout = async (
 };
 
 
-
-
 //  Bestellungen eines Nutzers abrufen
 export const getUserOrders = async (userEmail: string): Promise<Order[]> => {
    try{
@@ -135,10 +133,6 @@ export const requestReturn = async (token: string, orderId: string) => {
 };
 
 
-
-
-
-
 //  Admin genehmigt Rückgabe
 export const approveReturn = async (token: string, orderId: string): Promise<boolean> => {
     const response = await axios.put(`${API_URL}/${orderId}/approve-return`, {}, {
@@ -146,8 +140,6 @@ export const approveReturn = async (token: string, orderId: string): Promise<boo
     });
     return response.data;
 };
-
-
 
 
 // Alle Bestellungen abrufen (nur für Admins)
@@ -198,4 +190,22 @@ export const deleteOrder = async (orderId: string): Promise<void> => {
     await axios.delete(`${API_URL}/${orderId}`, {
         headers: getAuthHeader(),
     });
+};
+
+//  Bestellungen nach Benutzer-E-Mail suchen
+export const searchOrdersByEmail = async (email: string) => {
+    const response = await axios.get(`${API_URL}/search/email`, { params: { email } });
+    return response.data;
+};
+
+//  Bestellungen nach Bestellstatus suchen
+export const searchOrdersByStatus = async (status: string) => {
+    const response = await axios.get(`${API_URL}/search/status`, { params: { status } });
+    return response.data;
+};
+
+//  Bestellungen nach Zahlungsstatus suchen
+export const searchOrdersByPaymentStatus = async (paymentStatus: string) => {
+    const response = await axios.get(`${API_URL}/search/paymentStatus`, { params: { paymentStatus } });
+    return response.data;
 };

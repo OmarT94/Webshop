@@ -38,7 +38,6 @@ export const addProduct = async (token: string, product: Omit<Product, "id">): P
 };
 
 
-
 //  Produkt löschen
 export const deleteProduct = async (token: string, id: string) => {
     return axios.delete(`${API_URL}/${id}`, {
@@ -53,3 +52,22 @@ export const updateProduct = async (token: string, id: string, product: Product)
     });
     return response.data; //  Gib direkt das `Product` zurück
 };
+
+//  Produkte nach Name suchen
+export const getProductsByName = async (name: string) => {
+    const response = await axios.get(`${API_URL}/search/name`, { params: { name } });
+    return response.data;
+};
+
+//  Produkte nach Kategorie (Beschreibung) suchen
+export const getProductsByDescription = async (description: string) => {
+    const response = await axios.get(`${API_URL}/search/description`, { params: { description } });
+    return response.data;
+};
+
+//  Produkte nach Preisbereich suchen
+export const getProductsByPrice = async (minPrice: number, maxPrice: number) => {
+    const response = await axios.get(`${API_URL}/search/price`, { params: { minPrice, maxPrice } });
+    return response.data;
+};
+
