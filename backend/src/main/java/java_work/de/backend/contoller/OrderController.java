@@ -3,6 +3,7 @@ package java_work.de.backend.contoller;
 import com.stripe.exception.StripeException;
 import java_work.de.backend.dto.OrderDTO;
 import java_work.de.backend.model.Address;
+import java_work.de.backend.model.Order;
 import java_work.de.backend.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +98,24 @@ public class OrderController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void deleteOrder(@PathVariable String orderId) {
         orderService.deleteOrder(orderId);
+    }
+
+    //  Suche nach E-Mail
+    @GetMapping("/search/email")
+    public List<Order> searchByEmail(@RequestParam String email) {
+        return orderService.searchByEmail(email);
+    }
+
+    //  Suche nach Bestellstatus
+    @GetMapping("/search/status")
+    public List<Order> searchByStatus(@RequestParam Order.OrderStatus status) {
+        return orderService.searchByStatus(status);
+    }
+
+    //  Suche nach Zahlungsstatus
+    @GetMapping("/search/paymentStatus")
+    public List<Order> searchByPaymentStatus(@RequestParam Order.PaymentStatus status) {
+        return orderService.searchByPaymentStatus(status);
     }
 
 }

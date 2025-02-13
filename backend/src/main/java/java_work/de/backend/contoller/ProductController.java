@@ -1,6 +1,7 @@
 package java_work.de.backend.contoller;
 import jakarta.validation.Valid;
 import java_work.de.backend.dto.ProductDTO;
+import java_work.de.backend.model.Product;
 import java_work.de.backend.service.ProductService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -47,8 +48,24 @@ public class ProductController {
     public void deleteProduct(@PathVariable String id) {
         productService.deleteProduct(id);
     }
+
+
+    //  Suche nach Name
+    @GetMapping("/search/name")
+    public List<Product> searchByName(@RequestParam String name) {
+        return productService.searchByName(name);
+    }
+
+    //  Suche nach Kategorie
+    @GetMapping("/search/description")
+    public List<Product> searchByDescription(@RequestParam String description) {
+        return productService.searchByDescription(description);
+    }
+
+    //  Suche nach Preisbereich
+    @GetMapping("/search/price")
+    public List<Product> searchByPrice(@RequestParam double minPrice, @RequestParam double maxPrice) {
+        return productService.searchByPriceRange(minPrice, maxPrice);
+    }
 }
 
-//Controller bleibt schlank
-//Valide Daten dank @Valid
-//DTO wird in der API verwendet statt der Entity

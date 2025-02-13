@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.EnumSet;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -24,7 +24,6 @@ public class OrderService {
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
-   ;
     public OrderService(OrderRepository orderRepository, CartRepository cartRepository, @Value("${stripe.secret.key}") String stripeSecretKey ) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
@@ -49,24 +48,13 @@ public class OrderService {
                 .sum();
 
         //  Mapping von card → CREDIT_CARD
-        Order.PaymentMethod method;
-        switch (paymentMethod.toUpperCase()) {
-            case "CARD":
-            case "CREDIT_CARD":
-                method = Order.PaymentMethod.CREDIT_CARD;
-                break;
-            case "SOFORT":
-                method = Order.PaymentMethod.SOFORT;
-                break;
-            case "KLARNA":
-                method = Order.PaymentMethod.KLARNA;
-                break;
-            case "SEPA":
-                method = Order.PaymentMethod.SEPA;
-                break;
-            default:
-                throw new IllegalStateException(" Ungültige Zahlungsmethode: " + paymentMethod);
-        }
+        Order.PaymentMethod method = switch (paymentMethod.toUpperCase()) {
+            case "CARD", "CREDIT_CARD" -> Order.PaymentMethod.CREDIT_CARD;
+            case "SOFORT" -> Order.PaymentMethod.SOFORT;
+            case "KLARNA" -> Order.PaymentMethod.KLARNA;
+            case "SEPA" -> Order.PaymentMethod.SEPA;
+            default -> throw new IllegalStateException(" Ungültige Zahlungsmethode: " + paymentMethod);
+        };
 
         Order newOrder = new Order(
                 new ObjectId(),
