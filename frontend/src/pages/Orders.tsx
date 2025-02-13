@@ -1,158 +1,127 @@
 import { useEffect, useState } from "react";
-import {
-    getAllOrders,
-    updateOrderStatus,
-    updatePaymentStatus,
-    updateShippingAddress,
-    deleteOrder,
-    Order,
-    approveReturn, PaymentStatus, OrderStatus
-} from "../api/orders";
+import {getUserOrders, cancelOrder, Order, OrderStatus, requestReturn} from "../api/orders";
 import { useAuthStore } from "../store/authStore";
+
 
 export default function Orders() {
     const [orders, setOrders] = useState<Order[]>([]);
-    const isAdmin = useAuthStore((state) => state.isAdmin);
+    const token = useAuthStore((state) => state.token);
+    const userEmail = useAuthStore((state) => state.tokenEmail);
+    const restoreSession = useAuthStore((state) => state.restoreSession);
+    const [loading, setLoading] = useState(true);
 
-
+    useEffect(() => {
+        restoreSession();
+        setTimeout(() => setLoading(false), 200);
+    }, []);
 
     useEffect(() => {
         async function fetchOrders() {
-            if (!isAdmin) return;
-            const data = await getAllOrders();
-            setOrders(data);
+            if (!token || !userEmail) {
+                console.warn("Kein Token oder keine E-Mail vorhanden! Warte auf restoreSession...");
+                return;
+            }
+            try {
+                const data = await getUserOrders(userEmail);
+                setOrders(data);
+            } catch (error) {
+                console.error("Fehler beim Laden der Bestellungen:", error);
+            }
         }
-        fetchOrders();
-    }, [isAdmin]);
+        if (!loading) fetchOrders();
+    }, [token, userEmail, loading]);
 
-    const handleStatusChange = async (orderId: string, status: string) => {
-        const updatedOrder = await updateOrderStatus(orderId, status);
-        setOrders((prev) => prev.map((o) => (o.id === orderId ? updatedOrder : o)));
-    };
+    if (loading) return <p>🔄 Lade Daten...</p>;
 
-    const handlePaymentChange = async (orderId: string, paymentStatus: string) => {
-        const updatedOrder = await updatePaymentStatus(orderId, paymentStatus);
-        setOrders((prev) => prev.map((o) => (o.id === orderId ? updatedOrder : o)));
-    };
+    if (!token || !userEmail) {
+        return <p>Bitte einloggen, um Bestellungen zu sehen.</p>;
+    }
 
-    const handleAddressChange = async (orderId: string, newAddress: any) => {
-        const updatedOrder = await updateShippingAddress(orderId, newAddress);
-        setOrders((prev) => prev.map((o) => (o.id === orderId ? updatedOrder : o)));
-    };
+    const handleCancelOrder = async (orderId: string) => {
+        try {
+            const response = await cancelOrder(orderId);
+            alert(response); // Erfolg oder Fehlermeldung aus dem Backend anzeigen
 
-    const handleDeleteOrder = async (orderId: string) => {
-        await deleteOrder(orderId);
-        setOrders((prev) => prev.filter((o) => o.id !== orderId));
-    };
-
-    //  Angepasste handleApproveReturn-Funktion
-    const handleApproveReturn = async (orderId: string) => {
-        const token = useAuthStore.getState().token; //  Token korrekt holen
-
-        if (!token) {
-            alert("Kein Authentifizierungs-Token verfügbar.");
-            return;
+            setOrders(orders.map(order =>
+                order.id === orderId
+                    ? { ...order, orderStatus: OrderStatus.CANCELLED } //  Korrekt: Verwende das `OrderStatus`-Enum
+                    : order
+            ));
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            alert("Bestellung konnte nicht storniert werden!");
         }
+    };
+
+    const handleReturnRequest = async (orderId: string) => {
+        if (!token) return;
+        console.log(" API-Call wird ausgeführt für Bestellung:", orderId);
 
         try {
-            const success = await approveReturn(token, orderId); //  Token statt isAdmin verwenden
+            const success = await requestReturn(token, orderId);
+            console.log(" Rückgabe angefordert:", success);
+
             if (success) {
-                setOrders((prev) =>
-                    prev.map((o) =>
-                        o.id === orderId
-                            ? { ...o, orderStatus: OrderStatus.RETURNED, paymentStatus: PaymentStatus.REFUNDED }
-                            : o
+                setOrders((order) =>
+                    order.map((order) =>
+                        order.id === orderId
+                            ? { ...order, orderStatus: OrderStatus.RETURN_REQUESTED }
+                            : order
                     )
                 );
-                alert("Rückgabe erfolgreich genehmigt und Erstattung ausgelöst.");
             } else {
-                alert("Rückgabe konnte nicht genehmigt werden.");
+                console.error(" requestReturn API-Call fehlgeschlagen!");
             }
         } catch (error) {
-            console.error("Fehler beim Genehmigen der Rückgabe:", error);
-            alert("Es gab ein Problem beim Genehmigen der Rückgabe.");
+            console.error(" Fehler bei requestReturn:", error);
         }
     };
 
     return (
         <div className="p-6">
-            <h2 className="text-2xl font-bold">Bestellungen verwalten</h2>
-            {orders.map((order) => (
-                <div key={order.id} className="p-4 border mt-4">
-                    <p><strong>Kunde:</strong> {order.userEmail}</p>
-                    <p><strong>Status:</strong> {order.orderStatus}</p>
-                    <p><strong>Zahlungsstatus:</strong> {order.paymentStatus}</p>
-                    <p><strong>Gesamtpreis:</strong> {order.totalPrice} €</p>
+            <h2 className="text-2xl font-bold">📦 Meine Bestellungen</h2>
+            {orders.length === 0 ? (
+                <p>Keine Bestellungen gefunden.</p>
+            ) : (
+                orders.map((order) => (
+                    <div key={order.id} className="p-4 border mt-4">
+                        <p><strong>🛒 Status:</strong> {order.orderStatus}</p>
+                        <p><strong>💰 Gesamtpreis:</strong> {order.totalPrice} €</p>
+                        {order.items.map((item) => (
+                            <div key={item.productId} className="flex gap-4 items-center">
+                                <img src={item.imageBase64} alt={item.name} className="w-20 h-20"/>
+                                <p>{item.name} - {item.price} € x {item.quantity}</p>
+                            </div>
+                        ))}
 
-                    <label>Bestellstatus:</label>
-                    <select
-                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                        value={order.orderStatus}
-                        disabled={order.orderStatus === "RETURN_REQUESTED" || order.orderStatus === "RETURNED"}
-                    >
-                        <option value="PROCESSING">Bearbeitung</option>
-                        <option value="SHIPPED">Versendet</option>
-                        <option value="CANCELLED">Storniert</option>
-                    </select>
+                        <div className="mt-4 flex gap-4">
+                            <button
+                                onClick={() => handleCancelOrder(order.id)}
+                                className="p-2 bg-red-500 text-white rounded"
+                                disabled={order.orderStatus === OrderStatus.CANCELLED || order.orderStatus === OrderStatus.SHIPPED}
+                            >
+                                {order.orderStatus === OrderStatus.CANCELLED
+                                    ? " Bereits storniert"
+                                    : order.orderStatus === OrderStatus.SHIPPED
+                                        ? " Nicht stornierbar"
+                                        : " Bestellung stornieren"}
+                            </button>
 
 
-                    <label>Zahlungsstatus:</label>
-                    <select onChange={(e) => handlePaymentChange(order.id, e.target.value)} value={order.paymentStatus}>
-                        <option value="PENDING">Ausstehend</option>
-                        <option value="PAID">Bezahlt</option>
-                        <option value="REFUNDED">Erstattet</option>
-                    </select>
 
-                    <label>Lieferadresse:</label>
-                    <input
-                        type="text"
-                        placeholder="Straße"
-                        value={order.shippingAddress.street}
-                        onChange={(e) =>
-                            handleAddressChange(order.id, {...order.shippingAddress, street: e.target.value})
-                        }
-                    />
-                    <input
-                        type="text"
-                        placeholder="Stadt"
-                        value={order.shippingAddress.city}
-                        onChange={(e) =>
-                            handleAddressChange(order.id, {...order.shippingAddress, city: e.target.value})
-                        }
-                    />
-                    <input
-                        type="text"
-                        placeholder="PLZ"
-                        value={order.shippingAddress.postalCode}
-                        onChange={(e) =>
-                            handleAddressChange(order.id, {...order.shippingAddress, postalCode: e.target.value})
-                        }
-                    />
-                    <input
-                        type="text"
-                        placeholder="Land"
-                        value={order.shippingAddress.country}
-                        onChange={(e) =>
-                            handleAddressChange(order.id, {...order.shippingAddress, country: e.target.value})
-                        }
-                    />
+                                {order.orderStatus === "SHIPPED" && (
+                                    <button
+                                        onClick={() => handleReturnRequest(order.id)}
+                                        className="p-2 bg-blue-500 text-white rounded"
+                                    >
+                                        🔄 Rückgabe anfordern
+                                    </button>
+                                )}
 
-                    <button onClick={() => handleDeleteOrder(order.id)}
-                            className="p-2 bg-red-500 text-white rounded mt-2">
-                        Bestellung löschen
-                    </button>
-
-                    {order.orderStatus === "RETURN_REQUESTED" && (
-                        <button
-                            onClick={() => handleApproveReturn(order.id)}
-                            className="p-2 bg-green-600 text-white rounded"
-                        >
-                            ✅ Rückgabe genehmigen & erstatten
-                        </button>
-                    )}
-
-                </div>
-            ))}
+                        </div>
+                    </div>
+                ))
+            )}
         </div>
     );
 }

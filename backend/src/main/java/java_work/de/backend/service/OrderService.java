@@ -294,20 +294,34 @@ public class OrderService {
     }
 
 
-    // 🔍 Suche nach Benutzer-E-Mail
+    //  Suche nach Benutzer-E-Mail
     public List<Order> searchByEmail(String email) {
         return orderRepository.findByUserEmail(email);
     }
 
     //  Suche nach Bestellstatus
-    public List<Order> searchByStatus(Order.OrderStatus status) {
-        return orderRepository.findByOrderStatus(status);
+    public List<Order> searchByStatus(String status) {
+        try {
+            //  Enum-Parsing mit Großbuchstaben
+            Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status.toUpperCase());
+            return orderRepository.findByOrderStatus(orderStatus);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(" Ungültiger Bestellstatus: " + status);
+        }
     }
 
     //  Suche nach Zahlungsstatus
-    public List<Order> searchByPaymentStatus(Order.PaymentStatus status) {
-        return orderRepository.findByPaymentStatus(status);
+    public List<OrderDTO> searchByPaymentStatus(String paymentStatus) {
+        try {
+            //  Enum-Parsing mit Großbuchstaben
+            Order.PaymentStatus status = Order.PaymentStatus.valueOf(paymentStatus.toUpperCase());
+            List<Order> orders = orderRepository.findByPaymentStatus(status);
+            return orders.stream().map(this::mapToDTO).toList();
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(" Ungültiger Zahlungsstatus: " + paymentStatus);
+        }
     }
+
 
 
     /*

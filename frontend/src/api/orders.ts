@@ -192,20 +192,42 @@ export const deleteOrder = async (orderId: string): Promise<void> => {
     });
 };
 
-//  Bestellungen nach Benutzer-E-Mail suchen
-export const searchOrdersByEmail = async (email: string) => {
-    const response = await axios.get(`${API_URL}/search/email`, { params: { email } });
+
+//  Bestellungen nach E-Mail suchen
+export const searchOrdersByEmail = async (email: string): Promise<any[]> => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        throw new Error(" Kein Auth-Token verfügbar!");
+    }
+    const response = await axios.get(`${API_URL}/search/email`, {
+        params: { email },
+        headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data;
 };
 
-//  Bestellungen nach Bestellstatus suchen
-export const searchOrdersByStatus = async (status: string) => {
-    const response = await axios.get(`${API_URL}/search/status`, { params: { status } });
+//  Bestellungen nach Status suchen
+export const searchOrdersByStatus = async (status: string): Promise<any[]> => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        throw new Error(" Kein Auth-Token verfügbar!");
+    }
+    const response = await axios.get(`${API_URL}/search/status`, {
+        params: { status },
+        headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data;
 };
 
 //  Bestellungen nach Zahlungsstatus suchen
-export const searchOrdersByPaymentStatus = async (paymentStatus: string) => {
-    const response = await axios.get(`${API_URL}/search/paymentStatus`, { params: { paymentStatus } });
+export const searchOrdersByPaymentStatus = async (paymentStatus: string): Promise<any[]> => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        throw new Error(" Kein Auth-Token verfügbar!");
+    }
+    const response = await axios.get(`${API_URL}/search/paymentStatus`, {
+        params: { paymentStatus },
+        headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data;
 };

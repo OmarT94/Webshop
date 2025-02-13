@@ -108,14 +108,16 @@ public class OrderController {
 
     //  Suche nach Bestellstatus
     @GetMapping("/search/status")
-    public List<Order> searchByStatus(@RequestParam Order.OrderStatus status) {
+    public List<Order> searchByStatus(@RequestParam String status) {
         return orderService.searchByStatus(status);
     }
 
-    //  Suche nach Zahlungsstatus
+
+    //  Zahlstatus-Suche mit String-Parameter (case-insensitive)
     @GetMapping("/search/paymentStatus")
-    public List<Order> searchByPaymentStatus(@RequestParam Order.PaymentStatus status) {
-        return orderService.searchByPaymentStatus(status);
+    public List<OrderDTO> searchByPaymentStatus(@RequestParam String paymentStatus) {
+        return orderService.searchByPaymentStatus(paymentStatus);
     }
+
 
 }

@@ -57,7 +57,12 @@ public class SecurityConfig {
                     // Admin darf alle Bestellungen verwalten:
                     auth.requestMatchers(HttpMethod.GET, "/api/orders").hasAuthority(ROLE_ADMIN);
                     auth.requestMatchers(HttpMethod.PUT, "/api/orders/**").hasAuthority(ROLE_ADMIN);
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/orders/{orderId}/cancel").hasAnyAuthority("ROLE_USER", ROLE_ADMIN);
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/orders/{orderId}/cancel")
+                            .hasAnyAuthority("ROLE_USER", ROLE_ADMIN);
+                    //  Admin darf auch nach Bestellungen suchen
+                    auth.requestMatchers("/api/orders/search/**").hasAuthority(ROLE_ADMIN);
+
+
 
                     //   Hier sind deine PUT-Regeln korrekt eingefügt!
                     //   Debugging: Logge, ob die Sicherheitsregel greift
