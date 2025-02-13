@@ -306,6 +306,22 @@ public class OrderService {
     }
 
 
+    // 🔍 Suche nach Benutzer-E-Mail
+    public List<Order> searchByEmail(String email) {
+        return orderRepository.findByUserEmail(email);
+    }
+
+    //  Suche nach Bestellstatus
+    public List<Order> searchByStatus(Order.OrderStatus status) {
+        return orderRepository.findByOrderStatus(status);
+    }
+
+    //  Suche nach Zahlungsstatus
+    public List<Order> searchByPaymentStatus(Order.PaymentStatus status) {
+        return orderRepository.findByPaymentStatus(status);
+    }
+
+
     /*
       Hilfsfunktion: Mapping von Order zu OrderDTO
      */

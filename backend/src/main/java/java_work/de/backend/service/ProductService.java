@@ -70,6 +70,22 @@ private final ProductRepository productRepo;
         productRepo.deleteById(id);
     }
 
+    //  Suche nach Name
+    public List<Product> searchByName(String name) {
+        return productRepo.findByNameRegexIgnoreCase(name);
+    }
+
+    //  Suche nach Beschreibung (Kategorie)
+    public List<Product> searchByDescription(String description) {
+        return productRepo.findByDescriptionContainingIgnoreCase(description);
+    }
+
+    //  Suche nach Preisbereich
+    public List<Product> searchByPriceRange(double minPrice, double maxPrice) {
+        return productRepo.findByPriceBetween(minPrice, maxPrice);
+    }
+
+
     // Mapping Methoden
     private ProductDTO mapToDTO(Product product) {
         return new ProductDTO(
