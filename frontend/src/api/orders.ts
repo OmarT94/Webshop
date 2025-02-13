@@ -164,15 +164,23 @@ export const updateOrderStatus = async (orderId: string, status: string): Promis
 
 //  Zahlungsstatus aktualisieren (nur für Admins)
 export const updatePaymentStatus = async (orderId: string, paymentStatus: string): Promise<Order> => {
-    const response = await axios.put(`${API_URL}/${orderId}/payment`, {}, {
-        headers: {
-            ...getAuthHeader(),
-            "Content-Type": "application/json",
-        },
-        params: { paymentStatus },
-    });
-    return response.data;
+    try {
+        const response = await axios.put(`${API_URL}/${orderId}/payment-status`, {}, //  Leerer Body!
+            {
+                headers: {
+                    ...getAuthHeader(),
+                    "Content-Type": "application/json",
+                },
+                params: { paymentStatus }, //  `@RequestParam` erwartet das hier!
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error(" Fehler beim Aktualisieren des Zahlungsstatus:", error);
+        throw error;
+    }
 };
+
 
 //  Lieferadresse aktualisieren (nur für Admins)
 export const updateShippingAddress = async (orderId: string, newAddress: Address): Promise<Order> => {

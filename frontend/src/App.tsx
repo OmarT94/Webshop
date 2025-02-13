@@ -11,8 +11,9 @@ import { useAuthStore } from "./store/authStore";
 import { useEffect, useState } from "react";
 import Checkout from "./pages/Checkout.tsx";
 import ProductSearch from "./pages/ProductSearch.tsx";
-import AdminOrderSearch from "./pages/AdminOrderSearch.tsx";
+
 import Profil from "./pages/Profil.tsx";
+import AdminOrders from "./pages/AdminOrders.tsx";
 
 
 export default function App() {
@@ -48,7 +49,7 @@ export default function App() {
 
                     {/* Admin-geschützte Seiten */}
                     <Route path="/manage" element={isAdmin ? <Manage /> : <Navigate to="/" />} />
-                    <Route path="/admin/orders" element={isAdmin ? <AdminOrderSearch /> : <Navigate to="/" />} />
+                    <Route path="/admin/orders" element={isAdmin ? <AdminOrders /> : <Navigate to="/" />} />
                 </Routes>
             </div>
         </Router>
