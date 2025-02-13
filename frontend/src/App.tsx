@@ -11,6 +11,7 @@ import Navbar from "./components/Navbar";
 import { useAuthStore } from "./store/authStore";
 import { useEffect, useState } from "react";
 import Checkout from "./pages/Checkout.tsx";
+import ProductSearch from "./pages/ProductSearch.tsx";
 
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
                     <Route path="/login" element={!token ? <Login /> : <Navigate to="/products" />} />
                     <Route path="/register" element={!token ? <Register /> : <Navigate to="/products" />} />
                     <Route path="/products" element={<Products />} />
+                    <Route path="/search" element={<ProductSearch />} /> {/*  Produktsuche */}
 
                     {/* Geschützte Benutzer-Seiten */}
                     <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />

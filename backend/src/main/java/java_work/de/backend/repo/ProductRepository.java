@@ -9,9 +9,11 @@ import java.util.List;
 public interface ProductRepository extends MongoRepository<Product, String> {
 
     //  Suche nach Name (case-insensitive)
+    @Query("{ 'name': { $regex: ?0, $options: 'i' } }")
     List<Product> findByNameRegexIgnoreCase(String name);
 
     //  Suche nach Kategorie
+    @Query("{ 'description': { $regex: ?0, $options: 'i' } }")
     List<Product> findByDescriptionContainingIgnoreCase(String description);
 
     //  Suche nach Preisbereich
