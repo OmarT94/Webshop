@@ -121,9 +121,23 @@ body {
   cursor: pointer;
 }
 
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
 .profile-icon {
   font-size: 2rem;
-  color: white;
+  color: #333;
+  cursor: pointer;
+}
+
+.profile-greeting {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #555;
 }
 
 .profile-menu {
@@ -133,7 +147,7 @@ body {
   background: white;
   color: black;
   border: 1px solid #ccc;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   width: 220px;
   display: flex;
@@ -161,7 +175,6 @@ body {
 .profile-menu li:hover {
   background-color: #f1f1f1;
 }
-
 /* Login & Register Styling */
 .login-container, .register-container {
   display: flex;

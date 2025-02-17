@@ -7,7 +7,6 @@ import Cart from "./pages/Cart";
 import { useEffect, useState } from "react";
 import Checkout from "./pages/Checkout.tsx";
 import ProductSearch from "./pages/ProductSearch.tsx";
-import LogoutButton from "./components/LogoutButton";
 import "./App.css";
 import { useAuthStore } from "./store/authStore.ts";
 import UserProfile from "./pages/UserProfile.tsx";
@@ -30,19 +29,18 @@ export default function App() {
     return (
         <Router>
             <header className="header-container">
-                <h1>🛒 Webshop</h1>
+                <h1> Webshop</h1>
                 <nav className="nav-container">
                     <a href="/">Home</a>
                     <a href="/search">🔍 Suche</a>
                     {token ? (
                         <>
-                            <a href="/orders">Bestellungen</a>
                             <a href="/cart">🛒 Warenkorb</a>
-                            <a href="/profile">👤 Profil</a>
+
                             {isAdmin && <a href="/admin/orders">📑 Admin Bestellungen</a>}
                             {isAdmin && <a href="/manage">📑 Product verwaltung</a>}
                             <div className="logout-button-container">
-                                <LogoutButton />
+                                <UserProfile />
                             </div>
                         </>
                     ) : (

@@ -1,6 +1,4 @@
-import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
-import LogoutButton from "./LogoutButton";
 import { useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 
@@ -15,38 +13,40 @@ export default function Navbar() {
         <header className="header-container">
             {/* Logo */}
             <div className="logo-container">
-                <Link to="/products">🛍️ Webshop</Link>
+                <a href="/products">🛍️ Webshop</a>
             </div>
 
             {/* Suche */}
             <div className="search-container">
-                <Link to="/search">🔍 Suche</Link>
+                <a href="/search">🔍 Suche</a>
             </div>
 
             {/* Warenkorb + Login/Register oder Profil */}
             <div className="right-menu">
-                <Link to="/cart">🛒 Warenkorb</Link>
+                <a href="/cart">🛒 Warenkorb</a>
 
                 {!token ? (
                     <div className="auth-buttons">
-                        <Link to="/login">🔐 Login</Link>
-                        <Link to="/register">📝 Registrieren</Link>
+                        <a href="/login">🔐 Login</a>
+                        <a href="/register">📝 Registrieren</a>
                     </div>
                 ) : (
                     <div className="profile-container">
+                        {/* Kein Link mehr → Stattdessen ein Klick-Event für Dropdown */}
                         <FaUserCircle className="profile-icon" onClick={toggleProfileMenu} />
+
                         {profileMenuOpen && (
                             <div className="profile-menu">
                                 <ul>
-                                    <li><Link to="/profile">👤 Mein Profil</Link></li>
-                                    <li><Link to="/orders">📦 Bestellungen</Link></li>
+                                    <li><a href="/profile">👤 Mein Profil</a></li>
+                                    <li><a href="/orders">📦 Bestellungen</a></li>
                                     {isAdmin && (
                                         <>
-                                            <li><Link to="/manage">⚙️ Admin-Bereich</Link></li>
-                                            <li><Link to="/admin/orders">📑 Admin Bestellungen</Link></li>
+                                            <li><a href="/manage">⚙️ Admin-Bereich</a></li>
+                                            <li><a href="/admin/orders">📑 Admin Bestellungen</a></li>
                                         </>
                                     )}
-                                    <li><LogoutButton /></li>
+
                                 </ul>
                             </div>
                         )}
