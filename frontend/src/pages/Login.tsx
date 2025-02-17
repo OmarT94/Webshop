@@ -29,26 +29,12 @@ export default function Login() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen">
-            <h2 className="text-2xl font-bold">Login</h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="E-Mail"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Passwort"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
-                <button type="submit">Login</button>
+        <div className="login-container">
+            <h2 className="login-title">🔐 Login</h2>
+            <form onSubmit={handleSubmit} className="login-form">
+                <input type="email" name="email" placeholder="📧 E-Mail" value={formData.email} onChange={handleChange} required className="input-field" />
+                <input type="password" name="password" placeholder="🔑 Passwort" value={formData.password} onChange={handleChange} required className="input-field" />
+                <button type="submit" className="login-button">Einloggen</button>
             </form>
         </div>
     );

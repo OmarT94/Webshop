@@ -1,42 +1,237 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* Global Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+/* Header Styling */
+.header-container {
+  background-color: #ffffff;
+  padding: 1rem 2rem;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo Styling */
+.header-container h1 {
+  display: flex;
+  align-items: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  gap: 10px;
+}
+
+/* Navbar Styling */
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 15px;
+  flex-grow: 1;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+/* Navbar Links */
+.nav-container a {
+  color: #333;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background 0.3s ease, color 0.3s ease;
+  white-space: nowrap;
+}
+
+.nav-container a:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Login & Register Buttons */
+.login-buttons {
+  display: flex;
+  gap: 15px;
+  padding: 1rem 3rem;
+}
+
+.login-buttons a {
+  color: #18191b;
+  background-color: #007bff;
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+  white-space: nowrap;
+}
+
+.login-buttons a:hover {
+  background-color: #0056b3;
+}
+
+/* Logout Button Styling */
+.logout-button {
+  background-color: #dc3545;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
+  transform: scale(1.05);
+}
+
+.logout-button:active {
+  background-color: #a71d2a;
+  transform: scale(1);
+}
+
+.logout-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-grow: 0.1; /* Nutzt mehr Platz */
+}
+
+
+
+/* Profil-Dropdown */
+.profile-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.profile-icon {
+  font-size: 2rem;
+  color: white;
+}
+
+.profile-menu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: white;
+  color: black;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.profile-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-menu li {
+  padding: 12px;
+  cursor: pointer;
   text-align: center;
+  border-bottom: 1px solid #ddd;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.profile-menu li:last-child {
+  border-bottom: none;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.profile-menu li:hover {
+  background-color: #f1f1f1;
+}
+
+/* Login & Register Styling */
+.login-container, .register-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f9f9f9;
+}
+
+.login-title, .register-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.login-form, .register-form {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Footer Styling */
+footer {
+  background-color: #ffffff;
+  color: #333;
+  text-align: center;
+  padding: 20px;
+  font-size: 1rem;
+  border-top: 1px solid #ddd;
+  bottom: 0;
+  width: 100%;
+  box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+}
+
+footer p {
+  margin: 0;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    text-align: center;
   }
-  to {
-    transform: rotate(360deg);
+
+  .auth-buttons {
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
   }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  .profile-menu {
+    width: 100%;
   }
-}
 
-.card {
-  padding: 2em;
-}
+  .nav-container {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 
-.read-the-docs {
-  color: #888;
+  .login-buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 }

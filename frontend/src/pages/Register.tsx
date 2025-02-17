@@ -34,31 +34,18 @@ export default function Register() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen">
-            <h2 className="text-2xl font-bold">Registrieren</h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="E-Mail"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                />
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Passwort"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                />
-                <select name="role" value={formData.role} onChange={handleChange}>
-                    <option value="ROLE_USER">Benutzer</option>
-                    <option value="ROLE_ADMIN">Admin</option>
+        <div className="register-container">
+            <h2 className="register-title">📝 Registrieren</h2>
+            <form onSubmit={handleSubmit} className="register-form">
+                <input type="email" name="email" placeholder="📧 E-Mail" value={formData.email} onChange={handleChange} required className="input-field" />
+                <input type="password" name="password" placeholder="🔑 Passwort" value={formData.password} onChange={handleChange} required className="input-field" />
+                <select name="role" value={formData.role} onChange={handleChange} className="select-field">
+                    <option value="ROLE_USER">👤 Benutzer</option>
+                    <option value="ROLE_ADMIN">🛠️ Admin</option>
                 </select>
-                <button type="submit">Registrieren</button>
+                <button type="submit" className="register-button">Registrieren</button>
             </form>
         </div>
     );
 }
+
