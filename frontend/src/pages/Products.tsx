@@ -10,6 +10,7 @@ export default function Products() {
     const [products, setProducts] = useState<Product[]>([]);
     const { token } = useAuthStore();
     const userEmail = useAuthStore((state) => state.tokenEmail);
+
     const { addItem } = useCartStore();
 
     useEffect(() => {
@@ -20,17 +21,35 @@ export default function Products() {
         fetchData();
     }, []);
 
-    return (
 
-        <div className="p-6">
-            <h2 className="text-2xl font-bold text-center mb-6">Produkte</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    //  Funktion zur Erstellung einer Blob-URL für das Bild
+    const openImageInNewTab = (base64String: string) => {
+        const byteCharacters = atob(base64String.split(",")[1]); // Entfernt das "data:image/png;base64," usw.
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "image/png" }); // Erstelle eine Bild-Blob-Datei
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, "_image"); // Öffne das Bild in einem neuen Tab
+    };
+
+    return (
+        <div className="products-container">
+            <h2 className="products-title">Produkte</h2>
+            <div className="products-grid">
                 {products.map((product) => (
-                    <div key={product.id} className="border rounded-lg p-4 shadow-lg flex flex-col items-center">
-                        <img src={product.imageBase64} alt={product.name} className="w-40 h-40 object-cover"/>
-                        <h3 className="text-lg font-semibold mt-2">{product.name}</h3>
-                        <p className="text-gray-500">{product.description}</p>
-                        <p className="text-green-600 font-bold">{product.price} €</p>
+                    <div key={product.id} className="product-card">
+                        <img
+                            src={product.imageBase64}
+                            alt={product.name}
+                            className="product-image"
+                            onClick={() => openImageInNewTab(product.imageBase64)} // Öffne Bild korrekt
+                        />
+                        <h3 className="product-name">{product.name}</h3>
+                        <p className="product-description-home">{product.description}</p>
+                        <p className="product-price">{product.price} €</p>
                         <button
                             onClick={() => addItem(token!, userEmail!, {
                                 productId: product.id,
@@ -39,25 +58,14 @@ export default function Products() {
                                 quantity: 1,
                                 price: product.price
                             })}
-                            className="mt-2 p-2 bg-blue-500 text-white rounded"
+                            className="add-to-cart-button"
                         >
                             🛒 In den Warenkorb
                         </button>
                     </div>
                 ))}
             </div>
-            <div
-                className="p-6 text-xl"
-                style={{
-                    backgroundColor: "#3B82F6 !important",
-                    color: "white !important",
-                }}
-            >
-                🎯 Tailwind Test: Hintergrund muss jetzt blau sein!
-            </div>
-
 
         </div>
-
     );
 }
