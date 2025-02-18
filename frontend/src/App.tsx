@@ -33,16 +33,13 @@ export default function App() {
                 <nav className="nav-container">
                     <a href="/">Home</a>
                     <a href="/search">🔍 Suche</a>
+                    {token && !isAdmin ? (
+                        <a href="/cart">🛒 Warenkorb</a>
+                    ) : null}
                     {token ? (
-                        <>
-                            <a href="/cart">🛒 Warenkorb</a>
-
-                            {isAdmin && <a href="/admin/orders">📑 Admin Bestellungen</a>}
-                            {isAdmin && <a href="/manage">📑 Product verwaltung</a>}
-                            <div className="logout-button-container">
-                                <UserProfile />
-                            </div>
-                        </>
+                        <div className="logout-button-container">
+                            <UserProfile />
+                        </div>
                     ) : (
                         <div className="login-buttons">
                             <a href="/login">Login</a>

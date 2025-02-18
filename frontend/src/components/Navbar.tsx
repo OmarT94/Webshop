@@ -4,7 +4,6 @@ import { FaUserCircle } from "react-icons/fa";
 
 export default function Navbar() {
     const token = useAuthStore((state) => state.token);
-    const isAdmin = useAuthStore((state) => state.isAdmin);
     const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
     const toggleProfileMenu = () => setProfileMenuOpen(!profileMenuOpen);
@@ -40,12 +39,7 @@ export default function Navbar() {
                                 <ul>
                                     <li><a href="/profile">👤 Mein Profil</a></li>
                                     <li><a href="/orders">📦 Bestellungen</a></li>
-                                    {isAdmin && (
-                                        <>
-                                            <li><a href="/manage">⚙️ Admin-Bereich</a></li>
-                                            <li><a href="/admin/orders">📑 Admin Bestellungen</a></li>
-                                        </>
-                                    )}
+
 
                                 </ul>
                             </div>
