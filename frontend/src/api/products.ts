@@ -8,7 +8,7 @@ export type Product = {
     description: string;
     price: number;
     stock: number;
-    imageBase64: string;
+    images: string [];
 };
 
 export const getProducts = async () => {

@@ -5,7 +5,7 @@ const API_URL = "/api/orders";
 export type OrderItem = {
     productId: string;
     name: string;
-    imageBase64: string;
+    images: string[];
     quantity: number;
     price: number;
 };

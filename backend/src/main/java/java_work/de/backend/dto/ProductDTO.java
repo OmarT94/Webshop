@@ -1,8 +1,8 @@
 package java_work.de.backend.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
+
+import java.util.List;
 
 public record ProductDTO(
         String id,
@@ -20,7 +20,8 @@ public record ProductDTO(
         @Min(value = 0, message = "Lagerbestand darf nicht negativ sein!")
         Integer stock,
 
-        @NotBlank(message = "Bild ist erforderlich!") // Base64-String erforderlich
-        String imageBase64
+        @NotEmpty(message = "Mindestens ein Bild erforderlich!") //  Stellt sicher, dass `images` nicht leer ist
+        @Size(min = 1, message = "Es muss mindestens ein Bild vorhanden sein!") //  Mindestanzahl von 1 Bild setzen
+        List<String> images
 ) {
 }

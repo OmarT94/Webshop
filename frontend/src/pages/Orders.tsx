@@ -88,10 +88,17 @@ export default function Orders() {
                         <p><strong>🛒 Status:</strong> {order.orderStatus}</p>
                         <p><strong>💰 Gesamtpreis:</strong> {order.totalPrice} €</p>
                         {order.items.map((item) => (
-                            <div key={item.productId} className="flex gap-4 items-center">
-                                <img src={item.imageBase64} alt={item.name} className="w-20 h-20"/>
-                                <p>{item.name} - {item.price} € x {item.quantity}</p>
+                            <div key={item.productId} className="order-item">
+                                {Array.isArray(item.images) && item.images.length > 0 ? (
+                                    <img src={item.images[0]} alt={item.name} className="order-item-image"/>
+                                ) : (
+                                    <p className="no-image-text">Kein Bild verfügbar</p>
+                                )}
+                                <p className="order-item-info">
+                                    {item.name} - {item.price} € x {item.quantity}
+                                </p>
                             </div>
+
                         ))}
 
                         <div className="mt-4 flex gap-4">

@@ -18,7 +18,7 @@ export default function Manage() {
         description: "",
         price: 0,
         stock: 0,
-        imageBase64: "",
+        images: [],
     });
 
     const token = useAuthStore((state) => state.token);
@@ -71,7 +71,8 @@ export default function Manage() {
 
     const handleAddProduct = async () => {
         if (!token) return;
-        if (!newProduct.name || newProduct.price <= 0) {
+
+        if (!newProduct.name || newProduct.price <= 0 || newProduct.images.length === 0) {
             alert("Bitte gültige Produktdaten eingeben!");
             return;
         }
@@ -79,11 +80,12 @@ export default function Manage() {
         try {
             const addedProduct = await addProduct(token, newProduct);
             setProducts([...products, addedProduct]);
-            setNewProduct({ name: "", description: "", price: 0, stock: 0, imageBase64: "" });
+            setNewProduct({ name: "", description: "", price: 0, stock: 0, images: [] });
         } catch (error) {
             console.error("Fehler beim Hinzufügen des Produkts:", error);
         }
     };
+
 
     const handleDelete = async (id: string) => {
         if (!token) return;
@@ -121,32 +123,64 @@ export default function Manage() {
     };
 
     //  Datei als Base64 konvertieren
-    const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files) return;
 
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-            setNewProduct({ ...newProduct, imageBase64: reader.result as string });
-        };
+        const promises = Array.from(files).map(file => {
+            return new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result as string);
+            });
+        });
+
+        Promise.all(promises).then(base64Images => {
+            setNewProduct({ ...newProduct, images: base64Images });
+        });
     };
+
     //  NEU: Bild für existierende Produkte ändern
-    const handleImageChange = (id: string, file: File) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
+    const handleMultipleImageChange = (id: string, files: FileList) => {
+        const promises = Array.from(files).map(file => {
+            return new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result as string);
+            });
+        });
+
+        Promise.all(promises).then(base64Images => {
             setProducts((prevProducts) =>
-                prevProducts.map((p) => (p.id === id ? { ...p, imageBase64: reader.result as string } : p))
+                prevProducts.map((p) =>
+                    p.id === id
+                        ? { ...p, images: [...(p.images || []), ...base64Images] } //  Mehrere Bilder gleichzeitig hinzufügen
+                        : p
+                )
             );
-        };
+        });
     };
+
+    const openImageInNewTab = (base64String: string) => {
+        if (!base64String) return;
+        const byteCharacters = atob(base64String.split(",")[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "image/png" });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, "_blank");
+    };
+
+
 
     return (
         <div className="admin-container">
             <h2 className="admin-title">Admin-Produktverwaltung</h2>
 
-            {/* 🔍 Erweiterte Suchfelder */}
+            {/*  Erweiterte Suchfelder */}
             <div className="search-container">
                 <input type="text" placeholder="🔍 Produktname" value={searchTerm}
                        onChange={(e) => setSearchTerm(e.target.value)}/>
@@ -162,45 +196,67 @@ export default function Manage() {
                 <h3>Neues Produkt hinzufügen</h3>
                 <input type="text" placeholder="Name" value={newProduct.name}
                        onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}/>
-                <textarea
-                    placeholder="Beschreibung"
-                    value={newProduct.description}
-                    onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
-                    className="product-description product-description-add"
+                <textarea placeholder="Beschreibung"
+                          value={newProduct.description}
+                          onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                          className="product-description"
                 />
-
                 <input type="number" placeholder="Preis" value={newProduct.price}
                        onChange={(e) => setNewProduct({...newProduct, price: parseFloat(e.target.value)})}/>
                 <input type="number" placeholder="Stock" value={newProduct.stock}
                        onChange={(e) => setNewProduct({...newProduct, stock: parseInt(e.target.value)})}/>
-                <input type="file" accept="image/*" onChange={handleFile}/>
-                {newProduct.imageBase64 &&
-                    <img src={newProduct.imageBase64} alt="Produktbild" className="product-image"/>}
+                <input type="file" accept="image/*" multiple onChange={handleFiles}/>
                 <button className="add-product-button" onClick={handleAddProduct}>Produkt hinzufügen</button>
             </div>
 
             <ul className="product-list">
                 {filteredProducts.map((product) => (
                     <li key={product.id} className="product-item">
-                        <input type="text" value={product.name}
-                               onChange={(e) => handleChange(product.id, "name", e.target.value)}/>
+                        <input
+                            type="text"
+                            value={product.name}
+                            onChange={(e) => handleChange(product.id, "name", e.target.value)}
+                        />
                         <textarea
                             value={product.description}
                             onChange={(e) => handleChange(product.id, "description", e.target.value)}
                             className="product-description"
                         />
+                        <input
+                            type="number"
+                            value={product.price}
+                            onChange={(e) => handleChange(product.id, "price", parseFloat(e.target.value))}
+                        />
+                        <input
+                            type="number"
+                            value={product.stock}
+                            onChange={(e) => handleChange(product.id, "stock", parseInt(e.target.value))}
+                        />
 
-                        <input type="number" value={product.price}
-                               onChange={(e) => handleChange(product.id, "price", parseFloat(e.target.value))}/>
-                        <input type="number" value={product.stock}
-                               onChange={(e) => handleChange(product.id, "stock", parseInt(e.target.value))}/>
+                        {/*  Bestehende Bilder des Produkts anzeigen */}
+                        <div className="product-gallery">
+                            {product.images && product.images.length > 0 ? (
+                                product.images.map((image, index) => (
+                                    <img
+                                        key={index}
+                                        src={image}
+                                        alt={`${product.name} Bild ${index + 1}`}
+                                        className="product-thumbnail"
+                                        onClick={() => openImageInNewTab(image)}
+                                    />
+                                ))
+                            ) : (
+                                <p className="no-image-text">Kein Bild verfügbar</p>
+                            )}
+                        </div>
 
-                        {/*  Bild ändern */}
-                        <input type="file" accept="image/*"
-                               onChange={(e) => e.target.files && handleImageChange(product.id, e.target.files[0])}/>
-
-                        {product.imageBase64 &&
-                            <img src={product.imageBase64} alt={product.name} className="product-image"/>}
+                        {/*  Mehrere Bilder hochladen */}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => e.target.files && handleMultipleImageChange(product.id, e.target.files)}
+                        />
 
                         <div className="button-group">
                             <button className="save-button" onClick={() => handleUpdate(product.id)}>Speichern</button>
@@ -209,6 +265,7 @@ export default function Manage() {
                     </li>
                 ))}
             </ul>
+
         </div>
     );
 }

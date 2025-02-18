@@ -474,7 +474,7 @@ footer p {
   background-color: #218838;
 }
 
-/* 🔹 Produktliste mit genau 3 Karten pro Zeile */
+/*  Produktliste mit genau 3 Karten pro Zeile */
 .product-list {
   margin-top: 20px;
   width: 100%;
@@ -504,6 +504,30 @@ footer p {
   width: 100%;
   max-width: 800px; /* Karten nicht zu breit machen */
 }
+.product-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.product-thumbnail {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+/*  Datei-Upload */
+.product-item input[type="file"] {
+  margin-top: 10px;
+}
+
+.product-thumbnail:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
 
 .product-item input {
   width: 100%;
@@ -522,7 +546,7 @@ footer p {
   border-radius: 5px;
 }
 
-/* 🔹 Buttons mit mehr Abstand */
+/*  Buttons mit mehr Abstand */
 .button-group {
   display: flex;
   justify-content: space-between;
@@ -572,7 +596,6 @@ footer p {
     grid-template-columns: repeat(1, 1fr); /* 1 Karte pro Zeile auf kleinen Bildschirmen */
   }
 }
-
 
 
 /* Allgemeines Styling für die Produktübersicht */
