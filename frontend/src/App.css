@@ -394,3 +394,184 @@ footer p {
   font-size: 1.25rem;
   margin-top: 2rem;
 }
+
+
+
+
+/* Admin-Produktverwaltung */
+.admin-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.admin-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+.product-form {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  padding: 20px;
+  width: 100%;
+  max-width: 500px; /* Container bleibt zentriert */
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+.product-description {
+  margin-top: 5px;
+  width: 100%; /* Passt sich dem Container an */
+  height: 100px; /* Standardhöhe */
+  max-height: 200px; /* Verhindert, dass es zu groß wird */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  resize: vertical; /* Benutzer kann das Feld vergrößern */
+  overflow-y: auto; /* Scrollbar hinzufügen, falls zu viel Text */
+}
+
+/* 💡 Spezielles Styling für das Add-Formular */
+.product-description-add {
+  width: 100%;
+  height: 80px;
+  max-height: 150px; /* Begrenzung für das Add-Formular */
+  margin-bottom: 10px;
+}
+
+
+.product-form h3 {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.product-form input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+.product-form button {
+  background-color: #28a745;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+  margin-top: 10px;
+  width: 100%;
+}
+.product-form button:hover {
+  background-color: #218838;
+}
+
+/* 🔹 Produktliste mit genau 3 Karten pro Zeile */
+.product-list {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 1800px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Genau 3 Karten pro Zeile */
+  gap: 30px; /* Mehr Abstand zwischen den Karten */
+  justify-content: center;
+  padding-bottom: 50px; /* Genug Platz, um den Footer nicht zu überdecken */
+}
+/* Falls nur ein Produkt vorhanden ist, soll es mittig erscheinen */
+.product-list:has(.product-item:only-child) {
+  display: flex;
+  justify-content: center;
+}
+
+/* 🛒 Produktkarte */
+.product-item {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 800px; /* Karten nicht zu breit machen */
+}
+
+.product-item input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.product-item img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  margin-top: 10px;
+  border-radius: 5px;
+}
+
+/* 🔹 Buttons mit mehr Abstand */
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 15px;
+  gap: 10px; /* Abstand zwischen den Buttons */
+}
+
+.product-item button {
+  padding: 12px;
+  margin: 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 50%;
+  font-weight: bold;
+}
+
+.product-item .save-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.product-item .save-button:hover {
+  background-color: #0056b3;
+}
+
+.product-item .delete-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.product-item .delete-button:hover {
+  background-color: #a71d2a;
+}
+
+/* 🔄 Responsive Anpassung für kleinere Bildschirme */
+@media (max-width: 1200px) {
+  .product-list {
+    grid-template-columns: repeat(2, 1fr); /* 2 Karten pro Zeile auf mittleren Bildschirmen */
+  }
+}
+
+@media (max-width: 800px) {
+  .product-list {
+    grid-template-columns: repeat(1, 1fr); /* 1 Karte pro Zeile auf kleinen Bildschirmen */
+  }
+}
