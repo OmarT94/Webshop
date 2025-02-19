@@ -12,6 +12,7 @@ import { useAuthStore } from "./store/authStore.ts";
 import UserProfile from "./pages/UserProfile.tsx";
 import AdminOrders from "./pages/AdminOrders.tsx";
 import Manage from "./pages/Manage.tsx";
+import Addresses from "./pages/Addresses.tsx";
 
 export default function App() {
     const token = useAuthStore((state) => state.token);
@@ -58,9 +59,10 @@ export default function App() {
                     <Route path="/orders" element={token ? <Orders /> : <Navigate to="/login" />} />
                     <Route path="/cart" element={token ? <Cart /> : <Navigate to="/login" />} />
                     <Route path="/checkout" element={token ? <Checkout /> : <Navigate to="/login" />} />
-                    <Route path="/profile" element={token ? <UserProfile/> : <Navigate to="/login" />} />
+                    <Route path="/profile/address" element={token ? <Addresses/> : <Navigate to="/login" />} />
                     <Route path="/admin/orders" element={isAdmin ? <AdminOrders /> : <Navigate to="/" />} />
                     <Route path="/manage" element={isAdmin ? <Manage /> : <Navigate to="/" />} />
+
                 </Routes>
             </main>
 

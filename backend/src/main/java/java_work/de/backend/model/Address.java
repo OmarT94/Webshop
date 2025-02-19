@@ -1,11 +1,13 @@
 package java_work.de.backend.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import jakarta.validation.constraints.NotBlank;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 
 public record Address(
-        @Id ObjectId id, // ID für jede Adresse
+        @Id @JsonSerialize(using = ToStringSerializer.class) ObjectId id, // ID für jede Adresse
         @NotBlank(message = "Straße darf nicht leer sein!") String street,
         @NotBlank(message = "Hausnummer darf nicht leer sein!") String houseNumber,
         @NotBlank(message = "Stadt darf nicht leer sein!") String city,

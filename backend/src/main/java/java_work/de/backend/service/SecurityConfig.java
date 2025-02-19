@@ -61,9 +61,6 @@ public class SecurityConfig {
                             .hasAnyAuthority("ROLE_USER", ROLE_ADMIN);
                     //  Admin darf auch nach Bestellungen suchen
                     auth.requestMatchers("/api/orders/search/**").hasAuthority(ROLE_ADMIN);
-
-
-
                     //   Hier sind deine PUT-Regeln korrekt eingefügt!
                     //   Debugging: Logge, ob die Sicherheitsregel greift
                     logger.info("🛠 Setze Sicherheitsregel für Rückgabe-Anfrage...");

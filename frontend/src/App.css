@@ -1198,6 +1198,192 @@ footer p {
 
 
 
+/* Hauptcontainer */
+/*  Hauptcontainer */
+.address-container {
+  max-width: 700px;
+  margin: 80px auto;
+  padding: 25px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/*  Titel */
+.address-title {
+  font-size: 26px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Formular für neue Adresse */
+.address-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.address-form h3 {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #444;
+}
+
+.address-input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.address-input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Standard-Adresse Checkbox */
+.address-form label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  gap: 8px;
+  color: #555;
+}
+
+.address-form input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+/* Hinzufügen-Button */
+.address-add-button {
+  background: #007bff;
+  color: white;
+  padding: 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.address-add-button:hover {
+  background: #0056b3;
+}
+
+/* Adressliste */
+.address-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.address-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.address-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+/*  Adressinformationen */
+.address-detail {
+  font-size: 14px;
+  color: #444;
+  margin: 5px 0;
+}
+
+/* Standardadresse Anzeige */
+.address-detail strong {
+  color: #222;
+}
+
+.address-default {
+  font-size: 14px;
+  font-weight: bold;
+  color: #28a745;
+}
+
+/*  Buttons für Aktionen */
+.address-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.address-buttons button {
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+/* ✏Bearbeiten */
+.address-update-button {
+  background: #ffc107;
+  color: #222;
+}
+
+.address-update-button:hover {
+  background: #e0a800;
+}
+
+/*  Löschen */
+.address-delete-button {
+  background: #dc3545;
+  color: white;
+}
+
+.address-delete-button:hover {
+  background: #a71d2a;
+}
+
+/*  Responsive Anpassung */
+@media (max-width: 600px) {
+  .address-container {
+    padding: 15px;
+  }
+
+  .address-form {
+    padding: 15px;
+  }
+
+  .address-input {
+    padding: 10px;
+  }
+
+  .address-add-button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .address-buttons {
+    flex-direction: column;
+  }
+
+  .address-buttons button {
+    width: 100%;
+  }
+}
+
 
 
 

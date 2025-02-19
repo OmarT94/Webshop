@@ -4,7 +4,7 @@ import { useAuthStore } from "../store/authStore";
 import { FaUserCircle } from "react-icons/fa";
 
 export default function UserProfile() {
-    const email = useAuthStore((state) => state.tokenEmail);
+    const name = useAuthStore((state) => state.firstName);
     const isAdmin = useAuthStore((state) => state.isAdmin);
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -19,7 +19,7 @@ export default function UserProfile() {
         <div className="profile-container">
             <div className="profile-header" onClick={() => setMenuOpen(!menuOpen)}>
                 <FaUserCircle className="profile-icon"/>
-                <span className="profile-greeting">Hallo, {email}</span>
+                <span className="profile-greeting">Hallo {name}</span>
             </div>
 
             {menuOpen && (

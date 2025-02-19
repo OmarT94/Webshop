@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -152,18 +153,18 @@ public class UserService implements UserDetailsService {
         userRepository.save(updatedUser);
     }
 
-    ///////////////Adress/////////////////////////////
-    ///
+    ///////////////Adress////////////////////////////////
     public User addAddress(String email, AddressDTO addressDTO) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
 
-        List<Address> updatedAddresses=user.addresses()!=null?user.addresses():new ArrayList<>();
+        // Bestehende Adressen abrufen oder neue Liste erstellen
+        List<Address> updatedAddresses = new ArrayList<>(user.addresses());
 
-        boolean setAsDefault = updatedAddresses.isEmpty(); // Erste Adresse wird als Standard gesetzt
+        boolean setAsDefault = updatedAddresses.isEmpty(); // Erste Adresse = Standardadresse
 
         Address newAddress = new Address(
-                new ObjectId(),
+                new ObjectId(), // Speichert `id` als String
                 addressDTO.street(),
                 addressDTO.houseNumber(),
                 addressDTO.city(),
@@ -171,22 +172,19 @@ public class UserService implements UserDetailsService {
                 addressDTO.country(),
                 addressDTO.telephoneNumber(),
                 setAsDefault
-
         );
 
         updatedAddresses.add(newAddress);
 
-        User updatedUser = new User(
-                user.email(),
-                user.password(),
-                user.firstName(),
-                user.lastName(),
-                user.role(),
-                updatedAddresses
-        );
+        // **Direktes MongoDB-Update nur für `addresses`**
+        userRepository.updateAddressesByEmail(email, updatedAddresses);
 
-        return userRepository.save(updatedUser);
+        // **Aktualisierte Benutzerdaten zurückgeben**
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Fehler beim Abrufen des aktualisierten Benutzers!"));
     }
+
+
 
     public List<Address> getUserAddresses(String email) {
         return userRepository.findByEmail(email)
@@ -216,22 +214,31 @@ public class UserService implements UserDetailsService {
         return userRepository.save(updatedUser);
     }
 
-    public User deleteAddress(String email, ObjectId addressId) {
+    public User deleteAddress(String email, String addressId) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
 
-        List<Address> updatedAddresses = user.addresses().stream()
-                .filter(addr -> !addr.id().equals(addressId))
-                .toList();
+        //  Adressliste als veränderbare Liste holen
+        List<Address> updatedAddresses = new ArrayList<>(user.addresses());
 
-        // Falls die gelöschte Adresse die Standard-Adresse war → neue Standard-Adresse setzen
-        if (!updatedAddresses.isEmpty() && updatedAddresses.stream().noneMatch(Address::isDefault)) {
-            updatedAddresses.set(0, updatedAddresses.get(0).withIsDefault(true)); // 🛠 `withIsDefault()` nutzen
+        //  Die Adresse mit der passenden ID entfernen
+        updatedAddresses.removeIf(address -> address.id().toHexString().equals(addressId));
+
+        //   Falls keine Adresse mehr als Standard gesetzt ist, die erste als neue Standardadresse setzen
+        if (updatedAddresses.stream().noneMatch(Address::isDefault) && !updatedAddresses.isEmpty()) {
+            updatedAddresses.set(0, updatedAddresses.get(0).withIsDefault(true)); // ✅ NEUE Instanz mit `isDefault = true`
         }
 
-        User updatedUser = new User(user.email(), user.password(), user.firstName(), user.lastName(), user.role(), updatedAddresses);
-        return userRepository.save(updatedUser);
+        //  **NUR die Adressen in der Datenbank aktualisieren!**
+        userRepository.updateAddressesByEmail(email, updatedAddresses);
+
+        // **Den aktualisierten User abrufen & zurückgeben**
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Fehler beim Abrufen des aktualisierten Benutzers!"));
     }
+
+
+
 
 
 

@@ -39,7 +39,14 @@ public class UserController {
 
     //  Adresse löschen
     @DeleteMapping("/{email}/addresses/{addressId}")
-    public ResponseEntity<User> deleteAddress(@PathVariable String email, @PathVariable String addressId) {
-        return ResponseEntity.ok(userService.deleteAddress(email, new ObjectId(addressId)));
+    public ResponseEntity<?> deleteAddress(@PathVariable String email, @PathVariable String addressId) {
+        if (!ObjectId.isValid(addressId)) {
+            return ResponseEntity.badRequest().body("Ungültige Address-ID: " + addressId);
+        }
+
+        User updatedUser = userService.deleteAddress(email, addressId); // Jetzt korrekt übergeben
+        return ResponseEntity.ok(updatedUser);
     }
+
+
 }

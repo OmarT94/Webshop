@@ -11,10 +11,14 @@ export type OrderItem = {
 };
 
 export type Address = {
+    id: string;
     street: string;
+    houseNumber: string;
     city: string;
     postalCode: string;
     country: string;
+    telephoneNumber: string;
+    isDefault: false
 };
 
 export enum PaymentStatus {
