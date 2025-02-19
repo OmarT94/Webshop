@@ -119,7 +119,7 @@ class AuthControllerTest {
         when(authenticationManager.authenticate(any())).thenReturn(authMock);
 
         //**Mock für JWT-Erstellung (Fix mit zwei Parametern!)**
-        when(jwtUtil.generateToken(anyString(), any(User.Role.class))).thenReturn("mocked-jwt-token");
+        when(jwtUtil.generateToken(any(User.class))).thenReturn("mocked-jwt-token");
 
 
         // Login-Daten erstellen

@@ -91,8 +91,7 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
     const elements = useElements();
     const navigate = useNavigate();
 
-    const {token} = useAuthStore();
-    const userEmail = useAuthStore((state) => state.tokenEmail);
+    const { token, firstName, lastName, tokenEmail: userEmail } = useAuthStore();
     const {fetchCart, clearCart} = useCartStore();
 
     const [shippingAddress, setShippingAddress] = useState({
@@ -168,6 +167,13 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
     return (
         <div className="checkout-container">
             <h2 className="checkout-title">🛒 Checkout</h2>
+
+            {/* Vor- und Nachname anzeigen */}
+            <div className="checkout-section">
+                <h3 className="checkout-subtitle">👤 Persönliche Daten</h3>
+                <input type="text" value={firstName || ""} readOnly className="checkout-input readonly-input"/>
+                <input type="text" value={lastName || ""} readOnly className="checkout-input readonly-input"/>
+            </div>
 
             {/*  Lieferadresse */}
             <div className="checkout-section">

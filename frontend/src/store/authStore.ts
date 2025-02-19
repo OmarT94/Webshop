@@ -5,6 +5,8 @@ type AuthState = {
     token: string | null;
     isAdmin: boolean;
     tokenEmail: string | null;
+    firstName: string | null;
+    lastName: string | null;
     setToken: (token: string) => void;
     logout: () => void;
     restoreSession: () => void;
@@ -14,6 +16,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     token: localStorage.getItem("token"),
     isAdmin: false,
     tokenEmail: localStorage.getItem("tokenEmail") || null,
+    firstName: localStorage.getItem("firstName") || null,
+    lastName: localStorage.getItem("lastName") || null,
 
     setToken: (token) => {
         try {
@@ -28,11 +32,15 @@ export const useAuthStore = create<AuthState>((set) => ({
 
             localStorage.setItem("token", token);
             localStorage.setItem("tokenEmail", decoded.email);
+            localStorage.setItem("firstName", decoded.firstName || "");
+            localStorage.setItem("lastName", decoded.lastName || "");
 
             set({
                 token,
                 isAdmin: decoded.role === "ROLE_ADMIN",
                 tokenEmail: decoded.email,
+                firstName: decoded.firstName || null,
+                lastName: decoded.lastName || null,
             });
 
             console.log(" Token gespeichert:", localStorage.getItem("token"));
@@ -55,9 +63,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 
         const storedToken = localStorage.getItem("token");
         const storedEmail = localStorage.getItem("tokenEmail");
+        const storedFirstName = localStorage.getItem("firstName");
+        const storedLastName = localStorage.getItem("lastName");
 
         console.log(" Gefundener Token:", storedToken);
         console.log(" Gefundene Email:", storedEmail);
+        console.log("Gefundener Vorname:", storedFirstName);
+        console.log("Gefundener Nachname:", storedLastName);
 
         if (storedToken && storedEmail) {
             try {
@@ -66,6 +78,8 @@ export const useAuthStore = create<AuthState>((set) => ({
                     token: storedToken,
                     isAdmin: decoded.role === "ROLE_ADMIN",
                     tokenEmail: storedEmail,
+                    firstName: storedFirstName,
+                    lastName: storedLastName,
                 });
                 console.log("Sitzung erfolgreich wiederhergestellt:", decoded);
             } catch (error) {

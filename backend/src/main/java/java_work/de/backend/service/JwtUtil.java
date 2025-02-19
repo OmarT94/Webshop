@@ -12,11 +12,13 @@ public class JwtUtil {
     /*
      * → Erstellt ein JWT-Token mit Benutzer-E-Mail & Rolle.
      */
-    public String generateToken(String email, User.Role role) {
+    public String generateToken(User user) {
         return Jwts.builder()
-                .setSubject(email)
-                .claim("role",role.name())
-                .claim("email",email)
+                .setSubject(user.email())
+                .claim("firstName", user.firstName()) //  Vorname hinzufügen
+                .claim("lastName", user.lastName()) //  Nachname hinzufügen
+                .claim("role", user.role().name())
+                .claim("email",user.email())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 Stunden gültig
                 .signWith(JwtConfig.SECRET_KEY, SignatureAlgorithm.HS256)

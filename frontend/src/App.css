@@ -1070,7 +1070,7 @@ footer p {
 }
 
 
-/* 📦 Checkout Hauptcontainer */
+/*  Checkout Hauptcontainer */
 .checkout-container {
   max-width: 600px;
   margin: 80px auto;
@@ -1078,6 +1078,9 @@ footer p {
   background: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /*  Titel */
@@ -1091,12 +1094,16 @@ footer p {
 
 /* Checkout Abschnitte */
 .checkout-section {
+  width: 100%;
   margin-bottom: 20px;
   padding: 15px;
   background: #ffffff;
   border-radius: 6px;
   border: 1px solid #ddd;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /*  Abschnittstitel */
@@ -1105,17 +1112,24 @@ footer p {
   font-weight: bold;
   margin-bottom: 10px;
   color: #444;
+  text-align: center;
 }
 
 /*  Input-Felder */
 .checkout-input,
 .checkout-select {
-  width: 100%;
+  width: 90%;
   padding: 10px;
   margin-top: 5px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
+  text-align: center;
+}
+
+.readonly-input {
+  background-color: #e9ecef;
+  cursor: not-allowed;
 }
 
 /*  Kreditkarten-Element */
@@ -1123,6 +1137,7 @@ footer p {
   border: 1px solid #ccc;
   padding: 10px;
   border-radius: 5px;
+  width: 90%;
 }
 
 /*  SEPA-Label */
@@ -1131,6 +1146,7 @@ footer p {
   font-weight: bold;
   margin-top: 10px;
   color: #555;
+  text-align: center;
 }
 
 /*  Kaufen-Button */
@@ -1138,7 +1154,7 @@ footer p {
   background: #28a745;
   color: white;
   padding: 12px;
-  width: 100%;
+  width: 90%;
   border: none;
   cursor: pointer;
   border-radius: 5px;

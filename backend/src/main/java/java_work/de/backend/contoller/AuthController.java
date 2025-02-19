@@ -63,7 +63,7 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
 
         // JWT-Token erstellen
-        String token = jwtUtil.generateToken(user.email(), user.role());
+        String token = jwtUtil.generateToken(user);
 
         // Antwort mit Token zurückgeben (als JSON-Objekt)
         Map<String, String> response = new HashMap<>();

@@ -78,10 +78,15 @@ class JwtTokenTest {
     @DisplayName("Manipuliertes JWT-Token nicht validieren")
     void validateToken_tampered_fail() {
         // Arrange
-        String username = "testUser";
-        String role = "ROLE_USER";
+        User user = new User(
+                "testUser@example.com",
+                "hashedPassword",
+                "Max",
+                "Mustermann",
+                User.Role.ROLE_USER
+        );
 
-        String validToken = jwtUtil.generateToken(username, User.Role.valueOf(role));
+        String validToken = jwtUtil.generateToken(user);
 
         // Simuliere eine Manipulation am Token (einfach ein Zeichen hinzufügen)
         String tamperedToken = validToken + "1";
