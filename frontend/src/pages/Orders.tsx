@@ -78,33 +78,32 @@ export default function Orders() {
     };
 
     return (
-        <div className="p-6">
-            <h2 className="text-2xl font-bold">📦 Meine Bestellungen</h2>
+        <div className="orders-user-container">
+            <h2 className="orders-user-title">📦 Meine Bestellungen</h2>
             {orders.length === 0 ? (
-                <p>Keine Bestellungen gefunden.</p>
+                <p className="no-orders-user">Keine Bestellungen gefunden.</p>
             ) : (
                 orders.map((order) => (
-                    <div key={order.id} className="p-4 border mt-4">
-                        <p><strong>🛒 Status:</strong> {order.orderStatus}</p>
-                        <p><strong>💰 Gesamtpreis:</strong> {order.totalPrice} €</p>
+                    <div key={order.id} className="order-user-card">
+                        <p className="order-user-status"><strong>🛒 Status:</strong> {order.orderStatus}</p>
+                        <p className="order-user-status"><strong>💳 Bezahlstatus:</strong> {order.paymentStatus} €</p>
+                        <p className="order-user-total"><strong>💰 Gesamtpreis:</strong> {order.totalPrice} €</p>
                         {order.items.map((item) => (
-                            <div key={item.productId} className="order-item">
+                            <div key={item.productId} className="order-user-item">
                                 {Array.isArray(item.images) && item.images.length > 0 ? (
-                                    <img src={item.images[0]} alt={item.name} className="order-item-image"/>
+                                    <img src={item.images[0]} alt={item.name} className="order-user-item-image"/>
                                 ) : (
-                                    <p className="no-image-text">Kein Bild verfügbar</p>
+                                    <p className="no-image-text-user">Kein Bild verfügbar</p>
                                 )}
-                                <p className="order-item-info">
+                                <p className="order-item-info-user">
                                     {item.name} - {item.price} € x {item.quantity}
                                 </p>
                             </div>
-
                         ))}
-
-                        <div className="mt-4 flex gap-4">
+                        <div className="order-actions-user">
                             <button
                                 onClick={() => handleCancelOrder(order.id)}
-                                className="p-2 bg-red-500 text-white rounded"
+                                className="cancel-button-user"
                                 disabled={order.orderStatus === OrderStatus.CANCELLED || order.orderStatus === OrderStatus.SHIPPED}
                             >
                                 {order.orderStatus === OrderStatus.CANCELLED
@@ -113,18 +112,14 @@ export default function Orders() {
                                         ? " Nicht stornierbar"
                                         : " Bestellung stornieren"}
                             </button>
-
-
-
-                                {order.orderStatus === "SHIPPED" && (
-                                    <button
-                                        onClick={() => handleReturnRequest(order.id)}
-                                        className="p-2 bg-blue-500 text-white rounded"
-                                    >
-                                        🔄 Rückgabe anfordern
-                                    </button>
-                                )}
-
+                            {order.orderStatus === "SHIPPED" && (
+                                <button
+                                    onClick={() => handleReturnRequest(order.id)}
+                                    className="return-button-user"
+                                >
+                                    🔄 Rückgabe anfordern
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))

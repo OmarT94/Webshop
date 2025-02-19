@@ -41,7 +41,7 @@ public class CartService {
             OrderItem newItem = new OrderItem(
                     item.productId(),
                     item.name(),
-                    item.imageBase64(),
+                    item.images(),
                     existingItem.get().quantity()+item.quantity(),
                     item.price()
             );
@@ -61,7 +61,7 @@ public class CartService {
 
         List<OrderItem> updateItems = cart.items().stream()
                 .map(item -> item.productId().equals(productId)
-                ?new OrderItem(item.productId(),item.name(),item.imageBase64(),quantity,item.price())
+                ?new OrderItem(item.productId(),item.name(),item.images(),quantity,item.price())
                         :item)
                 .filter(item -> item.quantity() > 0) //  Falls die Menge 0 ist, wird das Produkt entfernt!
                 .toList();
