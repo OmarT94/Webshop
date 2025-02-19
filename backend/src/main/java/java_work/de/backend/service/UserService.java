@@ -1,13 +1,17 @@
 package java_work.de.backend.service;
 
+import java_work.de.backend.dto.AddressDTO;
+import java_work.de.backend.model.Address;
 import java_work.de.backend.model.User;
 import java_work.de.backend.repo.UserRepository;
+import org.bson.types.ObjectId;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,7 +65,8 @@ public class UserService implements UserDetailsService {
                 encryptedPassword,
                 firstName,
                 lastName,
-                role
+                role,
+                List.of()
         );
         return userRepository.save(user);
     }
@@ -115,7 +120,8 @@ public class UserService implements UserDetailsService {
                 (newPassword != null) ? passwordEncoder.encode(newPassword) : existingUser.password(),
                 existingUser.firstName(),
                 existingUser.lastName(),
-                existingUser.role()
+                existingUser.role(),
+                List.of()
         );
         userRepository.save(updatedUser);
     }
@@ -140,8 +146,96 @@ public class UserService implements UserDetailsService {
                 existingUser.password(), // Passwort bleibt unverändert
                 existingUser.firstName(),
                 existingUser.lastName(),
-                existingUser.role()
+                existingUser.role(),
+                List.of()
         );
         userRepository.save(updatedUser);
     }
+
+    ///////////////Adress/////////////////////////////
+    ///
+    public User addAddress(String email, AddressDTO addressDTO) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
+
+        List<Address> updatedAddresses=user.addresses()!=null?user.addresses():new ArrayList<>();
+
+        boolean setAsDefault = updatedAddresses.isEmpty(); // Erste Adresse wird als Standard gesetzt
+
+        Address newAddress = new Address(
+                new ObjectId(),
+                addressDTO.street(),
+                addressDTO.houseNumber(),
+                addressDTO.city(),
+                addressDTO.postalCode(),
+                addressDTO.country(),
+                addressDTO.telephoneNumber(),
+                setAsDefault
+
+        );
+
+        updatedAddresses.add(newAddress);
+
+        User updatedUser = new User(
+                user.email(),
+                user.password(),
+                user.firstName(),
+                user.lastName(),
+                user.role(),
+                updatedAddresses
+        );
+
+        return userRepository.save(updatedUser);
+    }
+
+    public List<Address> getUserAddresses(String email) {
+        return userRepository.findByEmail(email)
+                .map(User::addresses)
+                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
+    }
+
+    public User updateAddress(String email, ObjectId addressId, AddressDTO updatedAddressDTO) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
+
+        List<Address> updatedAddresses = user.addresses().stream()
+                .map(addr -> addr.id().equals(addressId) ?
+                        new Address(
+                                addr.id(),
+                                updatedAddressDTO.street(),
+                                updatedAddressDTO.houseNumber(),
+                                updatedAddressDTO.city(),
+                                updatedAddressDTO.postalCode(),
+                                updatedAddressDTO.country(),
+                                updatedAddressDTO.telephoneNumber(),
+                                addr.isDefault()
+                        ) : addr)
+                .toList();
+
+        User updatedUser = new User(user.email(), user.password(), user.firstName(), user.lastName(), user.role(), updatedAddresses);
+        return userRepository.save(updatedUser);
+    }
+
+    public User deleteAddress(String email, ObjectId addressId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
+
+        List<Address> updatedAddresses = user.addresses().stream()
+                .filter(addr -> !addr.id().equals(addressId))
+                .toList();
+
+        // Falls die gelöschte Adresse die Standard-Adresse war → neue Standard-Adresse setzen
+        if (!updatedAddresses.isEmpty() && updatedAddresses.stream().noneMatch(Address::isDefault)) {
+            updatedAddresses.set(0, updatedAddresses.get(0).withIsDefault(true)); // 🛠 `withIsDefault()` nutzen
+        }
+
+        User updatedUser = new User(user.email(), user.password(), user.firstName(), user.lastName(), user.role(), updatedAddresses);
+        return userRepository.save(updatedUser);
+    }
+
+
+
+
+
+
 }

@@ -42,7 +42,8 @@ public class AdminController {
                     existingUser.password(),
                     existingUser.firstName(),
                     existingUser.lastName(),
-                    newRole
+                    newRole,
+                    List.of()
             );
 
             // Geänderten Benutzer speichern
