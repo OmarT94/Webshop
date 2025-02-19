@@ -34,7 +34,7 @@ public class UserController {
     //  Adresse aktualisieren
     @PutMapping("/{email}/addresses/{addressId}")
     public ResponseEntity<User> updateAddress(@PathVariable String email, @PathVariable String addressId, @RequestBody AddressDTO addressDTO) {
-        return ResponseEntity.ok(userService.updateAddress(email, new ObjectId(addressId), addressDTO));
+        return ResponseEntity.ok(userService.updateAddress(email, addressId, addressDTO));
     }
 
     //  Adresse löschen

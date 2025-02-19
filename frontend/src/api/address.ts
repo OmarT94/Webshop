@@ -1,4 +1,5 @@
 import axios from "axios";
+import {Address} from "./orders.ts";
 
 const API_URL = "/api/users"; // Basis-URL für Nutzer-Endpunkte
 
@@ -54,14 +55,21 @@ export const addAddress = async (email: string, address: any) => {
 };
 
 //  Adresse aktualisieren
-export const updateAddress = async (email: string, addressId: string, address: any) => {
-    const token = localStorage.getItem("token");  // Token holen
+export const updateAddress = async (email: string, addressId: string, address: Address) => {
+    if (!addressId || addressId.trim() === "") {
+        console.error("Ungültige Address-ID:", addressId);
+        return;
+    }
+
+    const token = localStorage.getItem("token");
     if (!token) {
         console.error(" Kein Token gefunden!");
         return;
     }
+
     try {
-        console.log(` Aktualisiere Adresse mit ID: ${addressId} für Nutzer: ${email}`);
+        console.log(` UPDATE Anfrage an: /api/users/${email}/addresses/${addressId}`);
+        console.log(" Sende Daten:", address);
 
         const response = await axios.put(`${API_URL}/${email}/addresses/${addressId}`, address, {
             headers: { Authorization: `Bearer ${token}` },
@@ -70,10 +78,11 @@ export const updateAddress = async (email: string, addressId: string, address: a
         console.log(" Adresse erfolgreich aktualisiert:", response.data);
         return response.data;
     } catch (error: any) {
-        console.error(" Fehler beim Aktualisieren der Adresse:", error.response?.data || error.message);
+        console.error("API-Fehler beim Aktualisieren der Adresse:", error.response?.data || error.message);
         throw error;
     }
 };
+
 
 //  Adresse löschen
 export const deleteAddress = async (email: string, addressId: string) => {

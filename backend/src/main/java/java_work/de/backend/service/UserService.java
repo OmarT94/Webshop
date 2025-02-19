@@ -185,34 +185,63 @@ public class UserService implements UserDetailsService {
     }
 
 
-
     public List<Address> getUserAddresses(String email) {
         return userRepository.findByEmail(email)
                 .map(User::addresses)
                 .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
     }
 
-    public User updateAddress(String email, ObjectId addressId, AddressDTO updatedAddressDTO) {
+
+
+    public User updateAddress(String email, String addressId, AddressDTO addressDTO) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Benutzer nicht gefunden!"));
 
-        List<Address> updatedAddresses = user.addresses().stream()
-                .map(addr -> addr.id().equals(addressId) ?
-                        new Address(
-                                addr.id(),
-                                updatedAddressDTO.street(),
-                                updatedAddressDTO.houseNumber(),
-                                updatedAddressDTO.city(),
-                                updatedAddressDTO.postalCode(),
-                                updatedAddressDTO.country(),
-                                updatedAddressDTO.telephoneNumber(),
-                                addr.isDefault()
-                        ) : addr)
-                .toList();
+        System.out.println(" Eingehende ID zum Aktualisieren: " + addressId);
+        System.out.println(" Aktuelle Adressen vor Update: " + user.addresses());
 
-        User updatedUser = new User(user.email(), user.password(), user.firstName(), user.lastName(), user.role(), updatedAddresses);
-        return userRepository.save(updatedUser);
+        //  Vorhandene Adressen abrufen
+        List<Address> updatedAddresses = new ArrayList<>(user.addresses());
+
+        boolean addressUpdated = false;
+
+        //  **Vorhandene Adresse in der Liste ersetzen**
+        for (int i = 0; i < updatedAddresses.size(); i++) {
+            String currentAddressId = updatedAddresses.get(i).id().toHexString();
+            System.out.println("🔍 Prüfe Adresse mit ID: " + currentAddressId);
+
+            if (currentAddressId.equals(addressId)) {
+                System.out.println(" Adresse gefunden und wird aktualisiert!");
+
+                updatedAddresses.set(i, new Address(
+                        updatedAddresses.get(i).id(), // **ID beibehalten**
+                        addressDTO.street(),
+                        addressDTO.houseNumber(),
+                        addressDTO.city(),
+                        addressDTO.postalCode(),
+                        addressDTO.country(),
+                        addressDTO.telephoneNumber(),
+                        addressDTO.isDefault()
+                ));
+                addressUpdated = true;
+                break;
+            }
+        }
+
+        if (!addressUpdated) {
+            throw new RuntimeException(" Adresse mit ID " + addressId + " nicht gefunden!");
+        }
+
+        System.out.println(" Aktualisierte Adressliste: " + updatedAddresses);
+
+        //  **Nur die Adressen in der DB aktualisieren!**
+        userRepository.updateAddressesByEmail(email, updatedAddresses);
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException(" Fehler beim Abrufen des aktualisierten Benutzers!"));
     }
+
+    
 
     public User deleteAddress(String email, String addressId) {
         User user = userRepository.findByEmail(email)
@@ -226,7 +255,7 @@ public class UserService implements UserDetailsService {
 
         //   Falls keine Adresse mehr als Standard gesetzt ist, die erste als neue Standardadresse setzen
         if (updatedAddresses.stream().noneMatch(Address::isDefault) && !updatedAddresses.isEmpty()) {
-            updatedAddresses.set(0, updatedAddresses.get(0).withIsDefault(true)); // ✅ NEUE Instanz mit `isDefault = true`
+            updatedAddresses.set(0, updatedAddresses.get(0).withIsDefault(true)); //  NEUE Instanz mit `isDefault = true`
         }
 
         //  **NUR die Adressen in der Datenbank aktualisieren!**

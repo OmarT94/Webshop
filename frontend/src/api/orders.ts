@@ -18,7 +18,7 @@ export type Address = {
     postalCode: string;
     country: string;
     telephoneNumber: string;
-    isDefault: false
+    isDefault: boolean
 };
 
 export enum PaymentStatus {

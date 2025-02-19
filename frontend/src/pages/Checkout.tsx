@@ -95,10 +95,14 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
     const {fetchCart, clearCart} = useCartStore();
 
     const [shippingAddress, setShippingAddress] = useState({
+        id: "",
         street: "",
+        houseNumber: "",
         city: "",
         postalCode: "",
         country: "",
+        telephoneNumber: "",
+        isDefault: false
     });
 
     const [loading, setLoading] = useState(false);
@@ -183,14 +187,19 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
                         key={field}
                         type="text"
                         placeholder={field}
-                        value={shippingAddress[field as keyof typeof shippingAddress]}
+                        value={
+                            shippingAddress[field as keyof typeof shippingAddress] !== undefined
+                                ? String(shippingAddress[field as keyof typeof shippingAddress]) // Umwandlung in `String`
+                                : ""
+                        }
                         onChange={(e) =>
-                            setShippingAddress({...shippingAddress, [field]: e.target.value})
+                            setShippingAddress({ ...shippingAddress, [field]: e.target.value })
                         }
                         className="checkout-input"
                     />
                 ))}
             </div>
+
 
             {/*  Zahlungsmethode */}
             <div className="checkout-section">
