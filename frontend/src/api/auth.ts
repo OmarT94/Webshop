@@ -3,8 +3,8 @@ import {useAuthStore} from "../store/authStore.ts";
 
 const API_URL = "/api/auth";
 
-export const register = async (email: string, password: string, role: string) => {
-    return axios.post(`${API_URL}/register`, { email, password, role });
+export const register = async (email: string, password: string,firstName: string, lastName:string  ,role: string) => {
+    return axios.post(`${API_URL}/register`, { email, password, firstName, lastName, role });
 };
 
 export const login = async (email: string, password: string) => {

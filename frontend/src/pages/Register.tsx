@@ -5,6 +5,8 @@ import { register } from "../api/auth";
 type RegisterData = {
     email: string;
     password: string;
+    firstName: string;
+    lastName: string;
     role: string;
 };
 
@@ -12,6 +14,8 @@ export default function Register() {
     const [formData, setFormData] = useState<RegisterData>({
         email: "",
         password: "",
+        firstName:"",
+        lastName:"",
         role: "ROLE_USER",
     });
 
@@ -24,10 +28,11 @@ export default function Register() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await register(formData.email, formData.password, formData.role);
+            await register(formData.email, formData.password,formData.firstName,formData.lastName ,formData.role);
             localStorage.setItem("registered", "true"); // Registrierungsstatus speichern
             alert("Registrierung erfolgreich!");
             navigate("/login"); // Zur Login-Seite weiterleiten
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             alert("Fehler bei der Registrierung!");
         }
@@ -37,8 +42,14 @@ export default function Register() {
         <div className="register-container">
             <h2 className="register-title">📝 Registrieren</h2>
             <form onSubmit={handleSubmit} className="register-form">
-                <input type="email" name="email" placeholder="📧 E-Mail" value={formData.email} onChange={handleChange} required className="input-field" />
-                <input type="password" name="password" placeholder="🔑 Passwort" value={formData.password} onChange={handleChange} required className="input-field" />
+                <input type="text" name="firstName" placeholder="👤 Vorname" value={formData.firstName}
+                       onChange={handleChange} required className="input-field"/>
+                <input type="text" name="lastName" placeholder="👤 Nachname" value={formData.lastName}
+                       onChange={handleChange} required className="input-field"/>
+                <input type="email" name="email" placeholder="📧 E-Mail" value={formData.email} onChange={handleChange}
+                       required className="input-field"/>
+                <input type="password" name="password" placeholder="🔑 Passwort" value={formData.password}
+                       onChange={handleChange} required className="input-field"/>
                 <select name="role" value={formData.role} onChange={handleChange} className="select-field">
                     <option value="ROLE_USER">👤 Benutzer</option>
                     <option value="ROLE_ADMIN">🛠️ Admin</option>
