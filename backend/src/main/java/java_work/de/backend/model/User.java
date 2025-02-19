@@ -5,6 +5,8 @@ public record User(
 
         String email,
         String password,
+        String firstName,
+        String lastName,
         Role role // ROLE_USER oder ROLE_ADMIN
 )
 

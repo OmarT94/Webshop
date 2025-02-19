@@ -43,7 +43,7 @@ public class AuthController {
         User.Role userRole = (dto.role() != null && dto.role().equalsIgnoreCase("ROLE_ADMIN"))
                 ? User.Role.ROLE_ADMIN
                 : User.Role.ROLE_USER;
-        userService.registerUser(dto.email(), dto.password(), userRole);
+        userService.registerUser(dto.email(), dto.password(), dto.firstName(), dto.lastName(), userRole);
         return ResponseEntity.ok("Registrierung erfolgreich!");
     }
 
@@ -74,7 +74,7 @@ public class AuthController {
     //BadCredentialsException ist eine Exception in Spring Security, die geworfen wird,
     // wenn die Anmeldeinformationen (Benutzername/Passwort) ungültig sind.
     @ExceptionHandler(BadCredentialsException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED) // 👈 Gibt jetzt 401 zurück
+    @ResponseStatus(HttpStatus.UNAUTHORIZED) //  Gibt jetzt 401 zurück
     public ResponseEntity<Map<String, String>> handleBadCredentials(BadCredentialsException ex) {
         Map<String, String> response = new HashMap<>();
         response.put("message", "Falsche Anmeldedaten");

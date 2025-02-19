@@ -47,7 +47,7 @@ public class UserService implements UserDetailsService {
      * Registrierung eines neuen Benutzers mit E-Mail und Passwort.
      * Role kann ROLE_USER oder ROLE_ADMIN sein.
      */
-    public User registerUser(String email, String password, User.Role role) {
+    public User registerUser(String email, String password,  String firstName, String lastName,User.Role role) {
         // Überprüfen, ob die E-Mail bereits existiert
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("Ein Benutzer mit dieser E-Mail existiert bereits!");
@@ -59,6 +59,8 @@ public class UserService implements UserDetailsService {
                  // ID durch DB generiert
                 email,
                 encryptedPassword,
+                firstName,
+                lastName,
                 role
         );
         return userRepository.save(user);
@@ -111,6 +113,8 @@ public class UserService implements UserDetailsService {
 
                 existingUser.email(), // E-Mail bleibt unverändert
                 (newPassword != null) ? passwordEncoder.encode(newPassword) : existingUser.password(),
+                existingUser.firstName(),
+                existingUser.lastName(),
                 existingUser.role()
         );
         userRepository.save(updatedUser);
@@ -134,6 +138,8 @@ public class UserService implements UserDetailsService {
         User updatedUser = new User(
                 newEmail,
                 existingUser.password(), // Passwort bleibt unverändert
+                existingUser.firstName(),
+                existingUser.lastName(),
                 existingUser.role()
         );
         userRepository.save(updatedUser);

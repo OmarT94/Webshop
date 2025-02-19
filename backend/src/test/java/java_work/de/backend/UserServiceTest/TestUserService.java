@@ -41,6 +41,8 @@ public class TestUserService {
         // 2. Wir erwarten, dass userRepository.save(...) aufgerufen wird.
         String email = "test@test.com";
         String password = "test";
+        String firstName = "test";
+        String lastName = "test";
         User.Role role = User.Role.ROLE_USER;
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
@@ -48,7 +50,7 @@ public class TestUserService {
 
 
         //When
-        userService.registerUser(email, password, role);
+        userService.registerUser(email, password,firstName,lastName ,role);
 
         //Then
         // verify() prüft, ob userRepository.save(...) genau 1x aufgerufen wird.
@@ -60,19 +62,23 @@ public class TestUserService {
         // Given
         String email = "alice@example.com";
         String password = "secret";
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(new User( email, "hashed", User.Role.ROLE_USER)));
+        String firstName = "test";
+        String lastName = "test";
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(new User( email, "hashed",firstName,lastName, User.Role.ROLE_USER)));
 
         // When & Then
-        assertThrows(IllegalArgumentException.class, () -> userService.registerUser(email, password, User.Role.ROLE_USER));
+        assertThrows(IllegalArgumentException.class, () -> userService.registerUser(email, password, firstName,lastName,User.Role.ROLE_USER));
     }
 
     @Test
     void updateUserPassword_Success() {
         // Given
         String email = "bob@example.com";
+        String firstName = "test";
+        String lastName = "test";
         String newPw = "newSecret";
 
-        User existingUser = new User( email, "oldHashedPw", User.Role.ROLE_USER);
+        User existingUser = new User( email, "oldHashedPw",firstName,lastName ,User.Role.ROLE_USER);
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(existingUser));
         when(passwordEncoder.encode(newPw)).thenReturn("newHashedPw");
 
@@ -129,7 +135,7 @@ public class TestUserService {
 
     @Test
     void findByEmail_shouldReturnUser_whenUserExists() {
-        User user = new User( "test@example.com", "password", User.Role.ROLE_USER);
+        User user = new User( "test@example.com", "password","test","test", User.Role.ROLE_USER);
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
 
         Optional<User> result = userService.findByEmail("test@example.com");

@@ -40,6 +40,8 @@ public class AdminController {
 
                     existingUser.email(),
                     existingUser.password(),
+                    existingUser.firstName(),
+                    existingUser.lastName(),
                     newRole
             );
 

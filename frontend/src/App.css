@@ -909,6 +909,7 @@ footer p {
   align-items: center;
   background-color: #f8f8f8;
   min-height: 100vh;
+  margin-bottom: 25px;
 }
 
 /* Titel-Styling */
@@ -1012,6 +1013,117 @@ footer p {
 .return-button-user:hover {
   background-color: #0056b3;
 }
+
+
+/* 📦 Checkout Hauptcontainer */
+.checkout-container {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/*  Titel */
+.checkout-title {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Checkout Abschnitte */
+.checkout-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/*  Abschnittstitel */
+.checkout-subtitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #444;
+}
+
+/*  Input-Felder */
+.checkout-input,
+.checkout-select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+/*  Kreditkarten-Element */
+.checkout-card {
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+/*  SEPA-Label */
+.checkout-label {
+  display: block;
+  font-weight: bold;
+  margin-top: 10px;
+  color: #555;
+}
+
+/*  Kaufen-Button */
+.checkout-button {
+  background: #28a745;
+  color: white;
+  padding: 12px;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.checkout-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.checkout-button:hover:not(:disabled) {
+  background: #218838;
+}
+
+/*  Fehleranzeige */
+.checkout-error {
+  text-align: center;
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/*  Mobile Anpassung */
+@media (max-width: 600px) {
+  .checkout-container {
+    padding: 15px;
+  }
+
+  .checkout-section {
+    padding: 10px;
+  }
+
+  .checkout-button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
 
 
 

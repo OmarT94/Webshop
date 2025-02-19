@@ -91,9 +91,9 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
     const elements = useElements();
     const navigate = useNavigate();
 
-    const { token } = useAuthStore();
+    const {token} = useAuthStore();
     const userEmail = useAuthStore((state) => state.tokenEmail);
-    const {  fetchCart, clearCart } = useCartStore();
+    const {fetchCart, clearCart} = useCartStore();
 
     const [shippingAddress, setShippingAddress] = useState({
         street: "",
@@ -130,14 +130,14 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
                 }
 
                 paymentResult = await stripe.confirmCardPayment(clientSecret, {
-                    payment_method: { card: cardElement },
+                    payment_method: {card: cardElement},
                 });
 
             } else {
                 //  Alternative Zahlungsmethoden (Klarna, Sofort, SEPA)
                 paymentResult = await stripe.confirmPayment({
                     elements,
-                    confirmParams: { return_url: window.location.origin + "/profile" },
+                    confirmParams: {return_url: window.location.origin + "/profile"},
                 });
             }
 
@@ -165,14 +165,13 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
     };
 
 
-
     return (
-        <div className="p-6">
-            <h2 className="text-2xl font-bold">🛒 Checkout</h2>
+        <div className="checkout-container">
+            <h2 className="checkout-title">🛒 Checkout</h2>
 
             {/*  Lieferadresse */}
-            <div className="mt-6 border p-4">
-                <h3 className="font-semibold"> Lieferadresse</h3>
+            <div className="checkout-section">
+                <h3 className="checkout-subtitle"> Lieferadresse</h3>
                 {["street", "city", "postalCode", "country"].map((field) => (
                     <input
                         key={field}
@@ -180,20 +179,20 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
                         placeholder={field}
                         value={shippingAddress[field as keyof typeof shippingAddress]}
                         onChange={(e) =>
-                            setShippingAddress({ ...shippingAddress, [field]: e.target.value })
+                            setShippingAddress({...shippingAddress, [field]: e.target.value})
                         }
-                        className="w-full border p-2 mt-2"
+                        className="checkout-input"
                     />
                 ))}
             </div>
 
             {/*  Zahlungsmethode */}
-            <div className="mt-6 border p-4">
-                <h3 className="font-semibold"> Zahlungsmethode</h3>
+            <div className="checkout-section">
+                <h3 className="checkout-subtitle"> Zahlungsmethode</h3>
                 <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full border p-2 mt-2"
+                    className="checkout-select"
                 >
                     <option value="card">💳 Kreditkarte</option>
                     <option value="klarna">🔄 Klarna</option>
@@ -202,32 +201,26 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
                 </select>
             </div>
 
-            {/*  PaymentElement für Klarna, Sofort, SEPA */}
-            {/* 💰 Zahlungsdetails */}
-            <div className="mt-6 border p-4">
-                <h3 className="font-semibold">💰 Zahlungsdetails</h3>
+            {/*  Zahlungsdetails */}
+            <div className="checkout-section">
+                <h3 className="checkout-subtitle">💰 Zahlungsdetails</h3>
 
-                {/*  Kreditkarte → Nutzt `CardElement` */}
-                {paymentMethod === "card" && <CardElement className="border p-2" />}
-
-                {/*  SEPA-Lastschrift → IBAN-Feld hinzufügen */}
+                {paymentMethod === "card" && <CardElement className="checkout-card"/>}
                 {paymentMethod === "sepa_debit" && (
                     <div>
-                        <label>IBAN</label>
-                        <input type="text" placeholder="DE89 3704 0044 0532 0130 00" className="w-full border p-2 mt-2" />
+                        <label className="checkout-label">IBAN</label>
+                        <input type="text" placeholder="DE89 3704 0044 0532 0130 00" className="checkout-input"/>
                     </div>
                 )}
-
-                {/*  Klarna &  Sofort → Standard `PaymentElement` */}
-                {(paymentMethod === "klarna" || paymentMethod === "sofort") && <PaymentElement />}
+                {(paymentMethod === "klarna" || paymentMethod === "sofort") && <PaymentElement/>}
             </div>
 
-
-            <button onClick={handlePayment} className="p-2 bg-green-500 text-white rounded" disabled={loading || !stripe}>
+            {/* 🛍️ Kaufen Button */}
+            <button onClick={handlePayment} className="checkout-button" disabled={loading || !stripe}>
                 {loading ? "⏳ Zahlung läuft..." : "🛍 Jetzt kaufen"}
             </button>
 
-            {error && <p className="text-red-500 mt-4">{error}</p>}
+            {error && <p className="checkout-error">{error}</p>}
         </div>
     );
 }

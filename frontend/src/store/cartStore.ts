@@ -37,11 +37,11 @@ export const useCartStore = create<CartState>((set) => ({
                 totalPrice: state.totalPrice + item.price * item.quantity,
             }));
 
-            //  API-Anfrage im Hintergrund senden
-            await addToCart(token, userEmail, item);
         } catch (error) {
             console.error("Fehler beim Hinzufügen zum Warenkorb:", error);
         }
+        //  API-Anfrage im Hintergrund senden
+        await addToCart(token, userEmail, item);
     },
 
 
