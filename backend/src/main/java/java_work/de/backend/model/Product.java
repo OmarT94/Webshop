@@ -14,7 +14,7 @@ public record Product(
         Double price,
         Integer stock,
         List<String> images, // Bild als Base64 speichern
-        String category
+        String categoryId
 )
 {
 

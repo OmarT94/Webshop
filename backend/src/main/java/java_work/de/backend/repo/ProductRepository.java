@@ -13,8 +13,11 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     List<Product> findByNameRegexIgnoreCase(String name);
 
     //  Suche nach Kategorie
-    @Query("{ 'description': { $regex: ?0, $options: 'i' } }")
-    List<Product> findByDescriptionContainingIgnoreCase(String description);
+    @Query("{ 'category': { $regex: ?0, $options: 'i' } }")
+    List<Product> findByNameContainingIgnoreCase(String description);
+
+    // Produkte nach Kategorie abrufen
+    List<Product> findByCategoryId(String categoryId);
 
     //  Suche nach Preisbereich
     @Query("{ 'price': { $gte: ?0, $lte: ?1 } }")

@@ -2,8 +2,10 @@ package java_work.de.backend.service;
 
 import java_work.de.backend.dto.ProductDTO;
 import java_work.de.backend.model.Product;
+import java_work.de.backend.repo.CategoryRepository;
 import java_work.de.backend.repo.ProductRepository;
 import org.bson.types.ObjectId;
+import org.springframework.data.mongodb.repository.support.SimpleMongoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,9 +15,11 @@ import java.util.stream.Collectors;
 @Service
 public class ProductService {
 private final ProductRepository productRepo;
+private final CategoryRepository categoryRepo;
 
-    public ProductService(ProductRepository productRepo) {
+    public ProductService(ProductRepository productRepo, CategoryRepository categoryRepo) {
         this.productRepo = productRepo;
+        this.categoryRepo = categoryRepo;
     }
 
     public List<ProductDTO> findAllProducts() {
@@ -32,6 +36,10 @@ private final ProductRepository productRepo;
     }
 
     public ProductDTO saveProduct(ProductDTO productDTO) {
+        // Prüfen, ob die Kategorie existiert
+        if (!categoryRepo.existsById(productDTO.categoryId())) {
+            throw new IllegalArgumentException("Kategorie existiert nicht!");
+        }
         Product newProduct = new Product(
                 new ObjectId(),
                 productDTO.name(),
@@ -39,7 +47,7 @@ private final ProductRepository productRepo;
                 productDTO.price(),
                 productDTO.stock(),
                 productDTO.images(), //Hier wird das Base64-Bild gespeichert
-                productDTO.category()
+                productDTO.categoryId()
         );
 
         Product savedProduct = productRepo.save(newProduct);
@@ -60,7 +68,7 @@ private final ProductRepository productRepo;
                 productDTO.price(),
                 productDTO.stock(),
                 productDTO.images(),
-                productDTO.category()
+                productDTO.categoryId()
         );
 
          Product saveProduct = productRepo.save(updatedProduct);
@@ -79,7 +87,7 @@ private final ProductRepository productRepo;
 
     //  Suche nach Beschreibung (Kategorie)
     public List<Product> searchByDescription(String description) {
-        return productRepo.findByDescriptionContainingIgnoreCase(description);
+        return productRepo.findByNameContainingIgnoreCase(description);
     }
 
     //  Suche nach Preisbereich
@@ -97,7 +105,7 @@ private final ProductRepository productRepo;
                 product.price(),
                 product.stock(),
                 product.images(), //  Sende das Bild zurück ans Frontend
-                product.category()
+                product.categoryId()
         );
     }
 

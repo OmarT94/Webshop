@@ -471,14 +471,21 @@ footer p {
   border: 1px solid #ccc;
   padding: 20px;
   width: 100%;
-  max-width: 500px; /* Container bleibt zentriert */
+  max-width: 700px; /* Container bleibt zentriert */
   border-radius: 8px;
   background-color: #f9f9f9;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
+.product-form select {
+  width: 103%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
 
 .product-description {
   margin-top: 5px;
@@ -533,10 +540,10 @@ footer p {
 .product-list {
   margin-top: 20px;
   width: 100%;
-  max-width: 1800px;
+  max-width: 1700px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Genau 3 Karten pro Zeile */
-  gap: 30px; /* Mehr Abstand zwischen den Karten */
+  grid-template-columns: repeat(3, 1fr); /* Genau 3 Karten pro Zeile */
+  gap: 50px; /* Mehr Abstand zwischen den Karten */
   justify-content: center;
   padding-bottom: 50px; /* Genug Platz, um den Footer nicht zu überdecken */
 }
