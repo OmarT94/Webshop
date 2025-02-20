@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { getAddresses, addAddress, updateAddress, deleteAddress } from "../api/address";
 import { useAuthStore } from "../store/authStore";
-import { Address } from "../api/orders.ts";
+import {AddressWithId } from "../api/orders.ts";
 
 export default function Addresses() {
     const userEmail = useAuthStore((state) => state.tokenEmail) ?? "";
-    const [addresses, setAddresses] = useState<Address[]>([]);
+    const [addresses, setAddresses] = useState<AddressWithId[]>([]);
     const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
-    const [editedAddress, setEditedAddress] = useState<Address | null>(null);
-    const [newAddress, setNewAddress] = useState<Address>({
+    const [editedAddress, setEditedAddress] = useState<AddressWithId | null>(null);
+    const [newAddress, setNewAddress] = useState<AddressWithId>({
         id: "",
         street: "",
         houseNumber: "",
@@ -23,17 +23,15 @@ export default function Addresses() {
         if (userEmail) {
             getAddresses(userEmail)
                 .then((data) => setAddresses(data))
-                .catch((error) => console.error(" Fehler beim Laden der Adressen:", error));
+                .catch((error) => console.error("Fehler beim Laden der Adressen:", error));
         }
     }, [userEmail]);
-
 
     const handleAddAddress = async () => {
         if (!userEmail) return;
         try {
             const addedAddress = await addAddress(userEmail, newAddress);
-
-            setAddresses((prev) => [...prev, addedAddress]); //  UI sofort aktualisieren
+            setAddresses((prev) => [...prev, addedAddress]);
             setNewAddress({
                 id: "",
                 street: "",
@@ -45,16 +43,14 @@ export default function Addresses() {
                 isDefault: false
             });
 
-            //  **Zusätzlicher Sicherheitsschritt**: Aktualisierte Adressen nochmal abrufen
             const updatedList = await getAddresses(userEmail);
             setAddresses(updatedList);
-
         } catch (error) {
-            console.error(" Fehler beim Hinzufügen der Adresse:", error);
+            console.error("Fehler beim Hinzufügen der Adresse:", error);
         }
     };
 
-    const handleEditAddress = (address: Address) => {
+    const handleEditAddress = (address: AddressWithId) => {
         setEditingAddressId(address.id);
         setEditedAddress({ ...address });
     };
@@ -63,23 +59,18 @@ export default function Addresses() {
         if (!userEmail || !editedAddress) return;
         try {
             const updated = await updateAddress(userEmail, id, editedAddress);
-
             setAddresses((prev) =>
-                prev.map((addr) => (addr.id === id ? { ...addr, ...updated } : addr)) //  UI sofort aktualisieren
+                prev.map((addr) => (addr.id === id ? { ...addr, ...updated } : addr))
             );
-
             setEditingAddressId(null);
             setEditedAddress(null);
 
-            //  **Sicherheitsschritt**: Aktualisierte Adressen nochmal abrufen
             const updatedList = await getAddresses(userEmail);
             setAddresses(updatedList);
-
         } catch (error) {
             console.error("Fehler beim Aktualisieren der Adresse:", error);
         }
     };
-
 
     const handleDeleteAddress = async (id: string) => {
         if (!userEmail) return;
@@ -87,7 +78,7 @@ export default function Addresses() {
             await deleteAddress(userEmail, id);
             setAddresses(addresses.filter((addr) => addr.id !== id));
         } catch (error) {
-            console.error(" Fehler beim Löschen der Adresse:", error);
+            console.error("Fehler beim Löschen der Adresse:", error);
         }
     };
 
@@ -95,7 +86,6 @@ export default function Addresses() {
         <div className="address-container">
             <h2 className="address-title">📍 Meine Adressen</h2>
 
-            {/*  Neue Adresse hinzufügen */}
             <div className="address-form">
                 <h3>➕ Adresse hinzufügen</h3>
                 {["street", "houseNumber", "city", "postalCode", "country", "telephoneNumber"].map((field) => (
@@ -103,7 +93,7 @@ export default function Addresses() {
                         key={field}
                         type="text"
                         placeholder={field}
-                        value={String(newAddress[field as keyof Address])} //  Fix: String-Wert erzwingen
+                        value={String(newAddress[field as keyof AddressWithId])}
                         onChange={(e) => setNewAddress({ ...newAddress, [field]: e.target.value })}
                         className="address-input"
                     />
@@ -121,7 +111,6 @@ export default function Addresses() {
                 </button>
             </div>
 
-            {/*  Adressliste */}
             <ul className="address-list">
                 {addresses.length === 0 ? (
                     <p className="no-address-text"> Keine Adresse gefunden.</p>
@@ -136,7 +125,7 @@ export default function Addresses() {
                                         <input
                                             key={field}
                                             type="text"
-                                            value={String(editedAddress?.[field as keyof Address] || "")} //  Fix: Sicherstellen, dass immer ein String übergeben wird
+                                            value={String(editedAddress?.[field as keyof AddressWithId] || "")}
                                             onChange={(e) => setEditedAddress({ ...editedAddress!, [field]: e.target.value })}
                                             className="address-input"
                                         />

@@ -19,6 +19,9 @@ export type Address = {
     telephoneNumber: string;
     isDefault: boolean
 };
+export interface AddressWithId extends Address {
+    id: string;
+}
 
 export enum PaymentStatus {
     PAID = "PAID",
@@ -46,6 +49,8 @@ export type Order = {
     stripePaymentIntentId: string;
 
 };
+
+
 
 //  Hilfsfunktion für den Auth-Header
 const getAuthHeader = () => {
