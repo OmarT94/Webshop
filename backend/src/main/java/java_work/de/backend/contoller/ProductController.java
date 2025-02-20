@@ -57,9 +57,9 @@ public class ProductController {
     }
 
     //  Suche nach Kategorie
-    @GetMapping("/search/description")
-    public List<Product> searchByDescription(@RequestParam String description) {
-        return productService.searchByDescription(description);
+    @GetMapping("/search/category")
+    public List<Product> searchByCategory(@RequestParam String category) {
+        return productService.searchByCategory(category);
     }
 
     //  Suche nach Preisbereich

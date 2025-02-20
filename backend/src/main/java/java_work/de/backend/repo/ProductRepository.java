@@ -14,7 +14,7 @@ public interface ProductRepository extends MongoRepository<Product, String> {
 
     //  Suche nach Kategorie
     @Query("{ 'category': { $regex: ?0, $options: 'i' } }")
-    List<Product> findByNameContainingIgnoreCase(String description);
+    List<Product> findByCategoryContainingIgnoreCase(String category);
 
     // Produkte nach Kategorie abrufen
     List<Product> findByCategoryId(String categoryId);

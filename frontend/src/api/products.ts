@@ -61,8 +61,8 @@ export const getProductsByName = async (name: string) => {
 };
 
 //  Produkte nach Kategorie (Beschreibung) suchen
-export const getProductsByDescription = async (description: string) => {
-    const response = await axios.get(`${API_URL}/search/description`, { params: { description } });
+export const getProductsByCategory = async (category: string) => {
+    const response = await axios.get(`${API_URL}/search/category`, { params: { category } });
     return response.data;
 };
 
