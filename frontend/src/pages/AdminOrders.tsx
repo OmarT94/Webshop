@@ -98,7 +98,7 @@ export default function AdminOrders() {
                 <button onClick={handleSearch}>Suchen</button>
             </div>
 
-            {/* 🛒 Bestellliste */}
+            {/*  Bestellliste */}
             {orders.length > 0 ? (
                 <div className="orders-grid">
                     {orders.map((order) => (
@@ -109,14 +109,16 @@ export default function AdminOrders() {
                             <p><strong>Gesamtpreis:</strong> {order.totalPrice} €</p>
 
                             <label>Bestellstatus:</label>
-                            <select onChange={(e) => handleStatusChange(order.id, e.target.value)} value={order.orderStatus}>
+                            <select onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                                    value={order.orderStatus}>
                                 <option value="PROCESSING">Bearbeitung</option>
                                 <option value="SHIPPED">Versendet</option>
                                 <option value="CANCELLED">Storniert</option>
                             </select>
 
                             <label>Zahlungsstatus:</label>
-                            <select onChange={(e) => handlePaymentChange(order.id, e.target.value)} value={order.paymentStatus}>
+                            <select onChange={(e) => handlePaymentChange(order.id, e.target.value)}
+                                    value={order.paymentStatus}>
                                 <option value="PENDING">Ausstehend</option>
                                 <option value="PAID">Bezahlt</option>
                                 <option value="REFUNDED">Erstattet</option>
@@ -127,25 +129,55 @@ export default function AdminOrders() {
                                 type="text"
                                 placeholder="Straße"
                                 value={order.shippingAddress.street}
-                                onChange={(e) => handleAddressChange(order.id, { ...order.shippingAddress, street: e.target.value })}
+                                onChange={(e) => handleAddressChange(order.id, {
+                                    ...order.shippingAddress,
+                                    street: e.target.value
+                                })}
+                            />
+                            <input
+                                type="text"
+                                placeholder="Hausnummer"
+                                value={order.shippingAddress.houseNumber}
+                                onChange={(e) => handleAddressChange(order.id, {
+                                    ...order.shippingAddress,
+                                    houseNumber: e.target.value
+                                })}
                             />
                             <input
                                 type="text"
                                 placeholder="Stadt"
                                 value={order.shippingAddress.city}
-                                onChange={(e) => handleAddressChange(order.id, { ...order.shippingAddress, city: e.target.value })}
+                                onChange={(e) => handleAddressChange(order.id, {
+                                    ...order.shippingAddress,
+                                    city: e.target.value
+                                })}
                             />
                             <input
                                 type="text"
                                 placeholder="PLZ"
                                 value={order.shippingAddress.postalCode}
-                                onChange={(e) => handleAddressChange(order.id, { ...order.shippingAddress, postalCode: e.target.value })}
+                                onChange={(e) => handleAddressChange(order.id, {
+                                    ...order.shippingAddress,
+                                    postalCode: e.target.value
+                                })}
                             />
                             <input
                                 type="text"
                                 placeholder="Land"
                                 value={order.shippingAddress.country}
-                                onChange={(e) => handleAddressChange(order.id, { ...order.shippingAddress, country: e.target.value })}
+                                onChange={(e) => handleAddressChange(order.id, {
+                                    ...order.shippingAddress,
+                                    country: e.target.value
+                                })}
+                            />
+                            <input
+                                type="text"
+                                placeholder="Handy"
+                                value={order.shippingAddress.telephoneNumber}
+                                onChange={(e) => handleAddressChange(order.id, {
+                                    ...order.shippingAddress,
+                                    telephoneNumber: e.target.value
+                                })}
                             />
 
                             <div className="button-container">
