@@ -39,7 +39,7 @@ export default function Products() {
                     const productImages = product.images && product.images.length > 0 ? product.images : [];
                     return (
                         <div key={product.id} className="product-card">
-                            {/* 🖼️ Hauptbild (Erstes Bild aus `images`) */}
+                            {/*  Hauptbild (Erstes Bild aus `images`) */}
                             {productImages.length > 0 ? (
                                 <img
                                     src={productImages[0]}
@@ -51,7 +51,7 @@ export default function Products() {
                                 <p className="no-image-text">Kein Bild verfügbar</p>
                             )}
 
-                            {/* 🔄 Bild-Galerie mit allen Bildern */}
+                            {/*  Bild-Galerie mit allen Bildern */}
                             <div className="product-gallery">
                                 {productImages.length > 1 && productImages.map((image, index) => (
                                     <img

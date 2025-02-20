@@ -9,7 +9,7 @@ export type Product = {
     price: number;
     stock: number;
     images: string [];
-    category: string;
+    categoryId: string;
 };
 
 export const getProducts = async () => {

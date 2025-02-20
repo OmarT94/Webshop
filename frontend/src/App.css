@@ -646,7 +646,7 @@ footer p {
   background-color: #a71d2a;
 }
 
-/* 🔄 Responsive Anpassung für kleinere Bildschirme */
+/*  Responsive Anpassung für kleinere Bildschirme */
 @media (max-width: 1200px) {
   .product-list {
     grid-template-columns: repeat(2, 1fr); /* 2 Karten pro Zeile auf mittleren Bildschirmen */
@@ -659,8 +659,128 @@ footer p {
   }
 }
 
+/* Styling für das Such-Container-Dropdown */
+.search-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 700px;
+}
 
-/* Allgemeines Styling für die Produktübersicht */
+.search-container input,
+.search-container select {
+  flex: 1;
+  min-width: 150px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.search-container select {
+  background-color: white;
+  cursor: pointer;
+}
+
+.search-container select:hover {
+  border-color: #888;
+}
+
+/* Styling für das "Add Category"-Formular */
+.category-form {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  padding: 20px;
+  width: 100%;
+  max-width: 700px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.category-form h3 {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.category-form input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.category-form button {
+  background-color: #28a745;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.category-form button:hover {
+  background-color: #218838;
+}
+
+/* Styling für das Dropdown-Menü im Produktformular */
+.product-form select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.product-form select:hover {
+  border-color: #888;
+}
+
+/* Styling für das Dropdown-Menü in der Suchleiste */
+.search-container select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.search-container select:hover {
+  border-color: #888;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+  }
+
+  .search-container input,
+  .search-container select {
+    width: 100%;
+  }
+
+  .category-form,
+  .product-form {
+    padding: 15px;
+  }
+}
+
+
+/* Allgemeines Styling für die Produktübersicht ////////////////////////////////////////////////////*/
 .products-container {
   padding: 20px;
   display: flex;

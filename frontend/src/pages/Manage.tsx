@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { getProducts, addProduct, updateProduct, deleteProduct, Product } from "../api/products";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate } from "react-router-dom";
+import {addCategory, getCategories} from "../api/categories.ts";
 
-const categories = ["Elektronik", "Mode", "Haushalt", "Sport", "Bücher"];
+
 
 export default function Manage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+    const [newCategory, setNewCategory] = useState(""); //  Neue Kategorie
 
     //  Suchfilter für Name, Preisbereich, Kategorie
     const [searchTerm, setSearchTerm] = useState("");
@@ -15,13 +18,14 @@ export default function Manage() {
     const [maxPrice, setMaxPrice] = useState<number | "">("");
     const [category, setCategory] = useState("");
 
+
     const [newProduct, setNewProduct] = useState<Omit<Product, "id">>({
         name: "",
         description: "",
         price: 0,
         stock: 0,
         images: [],
-        category: "",
+        categoryId: "",
     });
 
     const token = useAuthStore((state) => state.token);
@@ -33,6 +37,19 @@ export default function Manage() {
             navigate("/");
         }
     }, [isAdmin, navigate]);
+
+    useEffect(() => {
+        async function fetchCategories() {
+            try {
+                const data = await getCategories();
+                console.log("Geladene Kategorien:", data);  //  Debugging
+                setCategories(data);
+            } catch (error) {
+                console.error("Fehler beim Laden der Kategorien:", error);
+            }
+        }
+        fetchCategories();
+    }, []);
 
     useEffect(() => {
         async function fetchData() {
@@ -66,28 +83,65 @@ export default function Manage() {
         }
 
         if (category.trim()) {
-            filtered = filtered.filter((p) => p.description.toLowerCase().includes(category.toLowerCase()));
+            filtered = filtered.filter((p) => p.categoryId.toLowerCase().includes(category.toLowerCase()));
         }
 
         setFilteredProducts(filtered);
     }, [searchTerm, minPrice, maxPrice, category, products]);
 
+    //  Neue Kategorie erstellen
+    const handleAddCategory = async () => {
+        if (!newCategory.trim()) return;
+
+        //  Korrekte Prüfung: `categories.some()` statt `includes()`
+        if (categories.some(cat => cat.name === newCategory)) {
+            alert("Kategorie existiert bereits!");
+            return;
+        }
+
+        try {
+            const addedCategory = await addCategory(newCategory);
+
+            // setCategories muss { id, name } speichern
+            setCategories([...categories, { id: addedCategory.id, name: addedCategory.name }]);
+
+            setNewCategory("");
+        } catch (error) {
+            console.error("Fehler beim Hinzufügen der Kategorie:", error);
+        }
+    };
+
+
     const handleAddProduct = async () => {
         if (!token) return;
 
-        if (!newProduct.name || newProduct.price <= 0 || newProduct.images.length === 0) {
+        if (!newProduct.name || newProduct.price <= 0 || newProduct.images.length === 0 || !newProduct.categoryId) {
             alert("Bitte gültige Produktdaten eingeben!");
             return;
         }
 
         try {
-            const addedProduct = await addProduct(token, newProduct);
+            //  Jetzt sucht TypeScript in einem Array von Objekten mit `id` und `name`
+            const category = categories.find(cat => cat.id === newProduct.categoryId);
+            if (!category) {
+                alert("Kategorie existiert nicht!");
+                return;
+            }
+
+            // Produkt mit richtiger categoryId senden
+            const addedProduct = await addProduct(token, {
+                ...newProduct,
+                categoryId: category.id
+            });
+
             setProducts([...products, addedProduct]);
-            setNewProduct({ name: "", description: "", price: 0, stock: 0, images: [], category: "" });
+            setNewProduct({ name: "", description: "", price: 0, stock: 0, images: [], categoryId: "" });
         } catch (error) {
             console.error("Fehler beim Hinzufügen des Produkts:", error);
         }
     };
+
+
 
 
     const handleDelete = async (id: string) => {
@@ -191,8 +245,26 @@ export default function Manage() {
                        onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : "")}/>
                 <input type="number" placeholder="Max Preis" value={maxPrice}
                        onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")}/>
-                <input type="text" placeholder="Kategorie" value={category}
-                       onChange={(e) => setCategory(e.target.value)}/>
+                <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                    <option value="">Alle Kategorien</option>
+                    {categories.length > 0 ? (
+                        categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>  //  Name anzeigen, ID speichern
+                        ))
+                    ) : (
+                        <option disabled>Lädt Kategorien...</option>
+                    )}
+                </select>
+
+
+            </div>
+
+            {/*  Neue Kategorie hinzufügen */}
+            <div className="category-form">
+                <h3>Kategorie hinzufügen</h3>
+                <input type="text" placeholder="Neue Kategorie" value={newCategory}
+                       onChange={(e) => setNewCategory(e.target.value)}/>
+                <button className="add-category-button" onClick={handleAddCategory}>Kategorie hinzufügen</button>
             </div>
 
             <div className="product-form">
@@ -211,12 +283,14 @@ export default function Manage() {
                 <input type="file" accept="image/*" multiple onChange={handleFiles}/>
 
                 {/* KATEGORIE AUSWÄHLEN */}
-                <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}>
+                <select value={newProduct.categoryId}
+                        onChange={(e) => setNewProduct({...newProduct, categoryId: e.target.value})}>
                     <option value="">Kategorie auswählen</option>
                     {categories.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                    ))}
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
                 </select>
+
                 <button className="add-product-button" onClick={handleAddProduct}>Produkt hinzufügen</button>
             </div>
 
