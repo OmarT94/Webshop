@@ -11,7 +11,6 @@ export type OrderItem = {
 };
 
 export type Address = {
-    id: string;
     street: string;
     houseNumber: string;
     city: string;

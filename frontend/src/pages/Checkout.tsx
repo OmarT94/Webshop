@@ -6,7 +6,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements, useStripe, useElements, CardElement, PaymentElement } from "@stripe/react-stripe-js";
 import { useNavigate } from "react-router-dom";
 
-//  Stripe Public Key aus .env laden
+
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 if (!stripeKey) {
     console.error(" Stripe Public Key fehlt! Stelle sicher, dass die .env Datei geladen wird.");
@@ -95,14 +95,14 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
     const {fetchCart, clearCart} = useCartStore();
 
     const [shippingAddress, setShippingAddress] = useState({
-        id: "",
+
         street: "",
         houseNumber: "",
         city: "",
         postalCode: "",
         country: "",
         telephoneNumber: "",
-        isDefault: false
+        isDefault: false,
     });
 
     const [loading, setLoading] = useState(false);
@@ -119,6 +119,13 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
         if (!stripe || !elements) return;
         setLoading(true);
         setError(null);
+        //  PRÜFE, OB CLIENT SECRET EXISTIERT!**
+        if (!clientSecret) {
+            console.error(" Kein Client Secret erhalten!");
+            setError("Ein Fehler ist aufgetreten. Versuche es erneut.");
+            setLoading(false);
+            return;
+        }
 
         try {
             let paymentResult;
@@ -153,7 +160,32 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
             console.log(" Zahlung erfolgreich! PaymentIntent:", paymentResult.paymentIntent);
 
             if (paymentResult.paymentIntent?.id) {
+                console.log(" Versandadresse wird gesendet:", shippingAddress);
+                //  **VALIDIERUNG: Stelle sicher, dass alle Felder von shippingAddress existieren!**
+                if (
+
+                    !shippingAddress.street.trim() ||
+                    !shippingAddress.houseNumber.trim() ||
+                    !shippingAddress.city.trim() ||
+                    !shippingAddress.postalCode.trim() ||
+                    !shippingAddress.country.trim() ||
+                    !shippingAddress.telephoneNumber.trim()
+                ) {
+                    console.error(" Fehler: Ungültige Lieferadresse!", shippingAddress);
+                    setError(" Ungültige Lieferadresse! Bitte alle Felder ausfüllen.");
+                    setLoading(false);
+                    return;
+                }
+                console.log(" Sende Checkout-Daten:", {
+                    token,
+                    userEmail,
+                    paymentIntentId: paymentResult.paymentIntent?.id,
+                    paymentMethod,
+                    shippingAddress
+                });
+
                 await checkout(token!, userEmail!, paymentResult.paymentIntent.id, paymentMethod, shippingAddress);
+
                 clearCart(token!, userEmail!);
                 navigate("/orders");
             } else {
@@ -182,18 +214,19 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
             {/*  Lieferadresse */}
             <div className="checkout-section">
                 <h3 className="checkout-subtitle"> Lieferadresse</h3>
-                {["street", "city", "postalCode", "country"].map((field) => (
+                {["street", "houseNumber", "city", "postalCode", "country", "telephoneNumber"].map((field) => (
                     <input
                         key={field}
                         type="text"
                         placeholder={field}
                         value={
-                            shippingAddress[field as keyof typeof shippingAddress] !== undefined
-                                ? String(shippingAddress[field as keyof typeof shippingAddress]) // Umwandlung in `String`
+                            shippingAddress[field as keyof typeof shippingAddress] !== undefined &&
+                            shippingAddress[field as keyof typeof shippingAddress] !== null
+                                ? String(shippingAddress[field as keyof typeof shippingAddress])
                                 : ""
                         }
                         onChange={(e) =>
-                            setShippingAddress({ ...shippingAddress, [field]: e.target.value })
+                            setShippingAddress({...shippingAddress, [field]: e.target.value})
                         }
                         className="checkout-input"
                     />
