@@ -1132,6 +1132,13 @@ footer p {
   cursor: not-allowed;
 }
 
+
+.checkout-select-address:focus {
+  border-color: #0056b3;
+  outline: none;
+}
+
+
 /*  Kreditkarten-Element */
 .checkout-card {
   border: 1px solid #ccc;

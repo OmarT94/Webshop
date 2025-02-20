@@ -5,7 +5,8 @@ import { checkout } from "../api/orders";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, useStripe, useElements, CardElement, PaymentElement } from "@stripe/react-stripe-js";
 import { useNavigate } from "react-router-dom";
-
+import { getAddresses } from "../api/address";
+import { AddressWithId } from "../api/orders.ts";
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 if (!stripeKey) {
@@ -14,7 +15,6 @@ if (!stripeKey) {
 
 const stripePromise = loadStripe(stripeKey);
 
-// Client Secret abrufen
 const fetchClientSecret = async (paymentMethod: string) => {
     const token = useAuthStore.getState().token;
     const totalPrice = useCartStore.getState().totalPrice;
@@ -52,23 +52,43 @@ const fetchClientSecret = async (paymentMethod: string) => {
     }
 };
 
-
-//  Checkout-Komponente mit `Elements`
 export default function Checkout() {
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [paymentMethod, setPaymentMethod] = useState("card");
     const [loading, setLoading] = useState(true);
+    const [addresses, setAddresses] = useState<AddressWithId[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+    const [newAddress, setNewAddress] = useState({
+        street: "",
+        houseNumber: "",
+        city: "",
+        postalCode: "",
+        country: "",
+        telephoneNumber: "",
+        isDefault: false
+    });
+    const [useNewAddress, setUseNewAddress] = useState(false);
+
+    const userEmail = useAuthStore((state) => state.tokenEmail) ?? "";
 
     useEffect(() => {
         const fetchSecret = async () => {
-            setClientSecret(null);  // UI-Refresh forcieren
-            setLoading(true);       // Ladezustand aktivieren
+            setClientSecret(null);
+            setLoading(true);
             const secret = await fetchClientSecret(paymentMethod);
             setClientSecret(secret);
-            setLoading(false);       // Ladezustand deaktivieren
+            setLoading(false);
         };
         fetchSecret();
     }, [paymentMethod]);
+
+    useEffect(() => {
+        if (userEmail) {
+            getAddresses(userEmail)
+                .then((data) => setAddresses(data))
+                .catch((error) => console.error("Fehler beim Laden der Adressen:", error));
+        }
+    }, [userEmail]);
 
     return (
         <>
@@ -76,7 +96,18 @@ export default function Checkout() {
                 <div className="p-6 text-center"> Lade Zahlungsmethoden...</div>
             ) : clientSecret ? (
                 <Elements stripe={stripePromise} options={{ clientSecret }}>
-                    <CheckoutForm clientSecret={clientSecret} paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod} />
+                    <CheckoutForm
+                        clientSecret={clientSecret}
+                        paymentMethod={paymentMethod}
+                        setPaymentMethod={setPaymentMethod}
+                        addresses={addresses}
+                        selectedAddressId={selectedAddressId}
+                        setSelectedAddressId={setSelectedAddressId}
+                        newAddress={newAddress}
+                        setNewAddress={setNewAddress}
+                        useNewAddress={useNewAddress}
+                        setUseNewAddress={setUseNewAddress}
+                    />
                 </Elements>
             ) : (
                 <div className="p-6 text-center text-red-500"> Fehler beim Laden der Zahlungsmethode</div>
@@ -85,25 +116,35 @@ export default function Checkout() {
     );
 }
 
-//  Checkout-Formular
-function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clientSecret: string, paymentMethod: string, setPaymentMethod: (method: string) => void }) {
+function CheckoutForm({
+                          clientSecret,
+                          paymentMethod,
+                          setPaymentMethod,
+                          addresses,
+                          selectedAddressId,
+                          setSelectedAddressId,
+                          newAddress,
+                          setNewAddress,
+                          useNewAddress,
+                          setUseNewAddress
+                      }: {
+    clientSecret: string;
+    paymentMethod: string;
+    setPaymentMethod: (method: string) => void;
+    addresses: AddressWithId[];
+    selectedAddressId: string | null;
+    setSelectedAddressId: (id: string | null) => void;
+    newAddress: any;
+    setNewAddress: (address: any) => void;
+    useNewAddress: boolean;
+    setUseNewAddress: (use: boolean) => void;
+}) {
     const stripe = useStripe();
     const elements = useElements();
     const navigate = useNavigate();
 
     const { token, firstName, lastName, tokenEmail: userEmail } = useAuthStore();
-    const {fetchCart, clearCart} = useCartStore();
-
-    const [shippingAddress, setShippingAddress] = useState({
-
-        street: "",
-        houseNumber: "",
-        city: "",
-        postalCode: "",
-        country: "",
-        telephoneNumber: "",
-        isDefault: false,
-    });
+    const { fetchCart, clearCart } = useCartStore();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -114,15 +155,24 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
         }
     }, [token, userEmail, fetchCart]);
 
-    //  Zahlung abwickeln
     const handlePayment = async () => {
         if (!stripe || !elements) return;
         setLoading(true);
         setError(null);
-        //  PRÜFE, OB CLIENT SECRET EXISTIERT!**
+
         if (!clientSecret) {
             console.error(" Kein Client Secret erhalten!");
             setError("Ein Fehler ist aufgetreten. Versuche es erneut.");
+            setLoading(false);
+            return;
+        }
+
+        const shippingAddress = useNewAddress
+            ? newAddress
+            : addresses.find((addr) => addr.id === selectedAddressId);
+
+        if (!shippingAddress) {
+            setError("Bitte wählen Sie eine Lieferadresse aus oder geben Sie eine neue Adresse ein.");
             setLoading(false);
             return;
         }
@@ -131,7 +181,6 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
             let paymentResult;
 
             if (paymentMethod === "card") {
-                //  Kreditkarte: Nutzt `CardElement`
                 const cardElement = elements.getElement(CardElement);
                 if (!cardElement) {
                     setError(" Fehler: Keine Kartendaten eingegeben.");
@@ -140,14 +189,12 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
                 }
 
                 paymentResult = await stripe.confirmCardPayment(clientSecret, {
-                    payment_method: {card: cardElement},
+                    payment_method: { card: cardElement },
                 });
-
             } else {
-                //  Alternative Zahlungsmethoden (Klarna, Sofort, SEPA)
                 paymentResult = await stripe.confirmPayment({
                     elements,
-                    confirmParams: {return_url: window.location.origin + "/profile"},
+                    confirmParams: { return_url: window.location.origin + "/profile" },
                 });
             }
 
@@ -157,35 +204,8 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
                 return;
             }
 
-            console.log(" Zahlung erfolgreich! PaymentIntent:", paymentResult.paymentIntent);
-
             if (paymentResult.paymentIntent?.id) {
-                console.log(" Versandadresse wird gesendet:", shippingAddress);
-                //  **VALIDIERUNG: Stelle sicher, dass alle Felder von shippingAddress existieren!**
-                if (
-
-                    !shippingAddress.street.trim() ||
-                    !shippingAddress.houseNumber.trim() ||
-                    !shippingAddress.city.trim() ||
-                    !shippingAddress.postalCode.trim() ||
-                    !shippingAddress.country.trim() ||
-                    !shippingAddress.telephoneNumber.trim()
-                ) {
-                    console.error(" Fehler: Ungültige Lieferadresse!", shippingAddress);
-                    setError(" Ungültige Lieferadresse! Bitte alle Felder ausfüllen.");
-                    setLoading(false);
-                    return;
-                }
-                console.log(" Sende Checkout-Daten:", {
-                    token,
-                    userEmail,
-                    paymentIntentId: paymentResult.paymentIntent?.id,
-                    paymentMethod,
-                    shippingAddress
-                });
-
                 await checkout(token!, userEmail!, paymentResult.paymentIntent.id, paymentMethod, shippingAddress);
-
                 clearCart(token!, userEmail!);
                 navigate("/orders");
             } else {
@@ -199,42 +219,63 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
         }
     };
 
-
     return (
         <div className="checkout-container">
             <h2 className="checkout-title">🛒 Checkout</h2>
 
-            {/* Vor- und Nachname anzeigen */}
             <div className="checkout-section">
                 <h3 className="checkout-subtitle">👤 Persönliche Daten</h3>
-                <input type="text" value={firstName || ""} readOnly className="checkout-input readonly-input"/>
-                <input type="text" value={lastName || ""} readOnly className="checkout-input readonly-input"/>
+                <input type="text" value={firstName || ""} readOnly className="checkout-input readonly-input" />
+                <input type="text" value={lastName || ""} readOnly className="checkout-input readonly-input" />
             </div>
 
-            {/*  Lieferadresse */}
             <div className="checkout-section">
                 <h3 className="checkout-subtitle"> Lieferadresse</h3>
-                {["street", "houseNumber", "city", "postalCode", "country", "telephoneNumber"].map((field) => (
+                <label>
                     <input
-                        key={field}
-                        type="text"
-                        placeholder={field}
-                        value={
-                            shippingAddress[field as keyof typeof shippingAddress] !== undefined &&
-                            shippingAddress[field as keyof typeof shippingAddress] !== null
-                                ? String(shippingAddress[field as keyof typeof shippingAddress])
-                                : ""
-                        }
-                        onChange={(e) =>
-                            setShippingAddress({...shippingAddress, [field]: e.target.value})
-                        }
-                        className="checkout-input"
+                        type="radio"
+                        checked={!useNewAddress}
+                        onChange={() => setUseNewAddress(false)}
                     />
-                ))}
+                    Gespeicherte Adresse verwenden
+                </label>
+                <select className={"checkout-select"}
+                    value={selectedAddressId || ""}
+                    onChange={(e) => setSelectedAddressId(e.target.value)}
+                    disabled={useNewAddress}
+                >
+                    <option value="">Adresse auswählen</option>
+                    {addresses.map((address) => (
+                        <option key={address.id} value={address.id}>
+                            {address.street} {address.houseNumber}, {address.postalCode} {address.city}, {address.country}
+                        </option>
+                    ))}
+                </select>
+
+                <label>
+                    <input className={"checkout-select"}
+                        type="radio"
+                        checked={useNewAddress}
+                        onChange={() => setUseNewAddress(true)}
+                    />
+                    Neue Adresse verwenden
+                </label>
+                {useNewAddress && (
+                    <div>
+                        {["street", "houseNumber", "city", "postalCode", "country", "telephoneNumber"].map((field) => (
+                            <input
+                                key={field}
+                                type="text"
+                                placeholder={field}
+                                value={newAddress[field]}
+                                onChange={(e) => setNewAddress({ ...newAddress, [field]: e.target.value })}
+                                className="checkout-input"
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
 
-
-            {/*  Zahlungsmethode */}
             <div className="checkout-section">
                 <h3 className="checkout-subtitle"> Zahlungsmethode</h3>
                 <select
@@ -249,21 +290,18 @@ function CheckoutForm({ clientSecret, paymentMethod, setPaymentMethod }: { clien
                 </select>
             </div>
 
-            {/*  Zahlungsdetails */}
             <div className="checkout-section">
                 <h3 className="checkout-subtitle">💰 Zahlungsdetails</h3>
-
-                {paymentMethod === "card" && <CardElement className="checkout-card"/>}
+                {paymentMethod === "card" && <CardElement className="checkout-card" />}
                 {paymentMethod === "sepa_debit" && (
                     <div>
                         <label className="checkout-label">IBAN</label>
-                        <input type="text" placeholder="DE89 3704 0044 0532 0130 00" className="checkout-input"/>
+                        <input type="text" placeholder="DE89 3704 0044 0532 0130 00" className="checkout-input" />
                     </div>
                 )}
-                {(paymentMethod === "klarna" || paymentMethod === "sofort") && <PaymentElement/>}
+                {(paymentMethod === "klarna" || paymentMethod === "sofort") && <PaymentElement />}
             </div>
 
-            {/* 🛍️ Kaufen Button */}
             <button onClick={handlePayment} className="checkout-button" disabled={loading || !stripe}>
                 {loading ? "⏳ Zahlung läuft..." : "🛍 Jetzt kaufen"}
             </button>
