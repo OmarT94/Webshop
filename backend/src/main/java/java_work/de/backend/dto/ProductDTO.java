@@ -22,6 +22,9 @@ public record ProductDTO(
 
         @NotEmpty(message = "Mindestens ein Bild erforderlich!") //  Stellt sicher, dass `images` nicht leer ist
         @Size(min = 1, message = "Es muss mindestens ein Bild vorhanden sein!") //  Mindestanzahl von 1 Bild setzen
-        List<String> images
+        List<String> images,
+
+        @NotBlank(message = "Kategorie darf nicht leer sein!") String category // Kategorie hinzufügen
+
 ) {
 }

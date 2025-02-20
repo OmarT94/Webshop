@@ -9,6 +9,7 @@ export type Product = {
     price: number;
     stock: number;
     images: string [];
+    category: string;
 };
 
 export const getProducts = async () => {

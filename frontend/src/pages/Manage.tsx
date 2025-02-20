@@ -3,11 +3,13 @@ import { getProducts, addProduct, updateProduct, deleteProduct, Product } from "
 import { useAuthStore } from "../store/authStore";
 import { useNavigate } from "react-router-dom";
 
+const categories = ["Elektronik", "Mode", "Haushalt", "Sport", "Bücher"];
+
 export default function Manage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
-    // 🔍 Suchfilter für Name, Preisbereich, Kategorie
+    //  Suchfilter für Name, Preisbereich, Kategorie
     const [searchTerm, setSearchTerm] = useState("");
     const [minPrice, setMinPrice] = useState<number | "">("");
     const [maxPrice, setMaxPrice] = useState<number | "">("");
@@ -19,6 +21,7 @@ export default function Manage() {
         price: 0,
         stock: 0,
         images: [],
+        category: "",
     });
 
     const token = useAuthStore((state) => state.token);
@@ -44,7 +47,7 @@ export default function Manage() {
         fetchData();
     }, []);
 
-    // 🔍 Produktsuche mit mehreren Filtern (Name, Preisbereich, Kategorie)
+    //  Produktsuche mit mehreren Filtern (Name, Preisbereich, Kategorie)
     useEffect(() => {
         let filtered = products;
 
@@ -80,7 +83,7 @@ export default function Manage() {
         try {
             const addedProduct = await addProduct(token, newProduct);
             setProducts([...products, addedProduct]);
-            setNewProduct({ name: "", description: "", price: 0, stock: 0, images: [] });
+            setNewProduct({ name: "", description: "", price: 0, stock: 0, images: [], category: "" });
         } catch (error) {
             console.error("Fehler beim Hinzufügen des Produkts:", error);
         }
@@ -206,6 +209,14 @@ export default function Manage() {
                 <input type="number" placeholder="Stock" value={newProduct.stock}
                        onChange={(e) => setNewProduct({...newProduct, stock: parseInt(e.target.value)})}/>
                 <input type="file" accept="image/*" multiple onChange={handleFiles}/>
+
+                {/* KATEGORIE AUSWÄHLEN */}
+                <select value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}>
+                    <option value="">Kategorie auswählen</option>
+                    {categories.map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                </select>
                 <button className="add-product-button" onClick={handleAddProduct}>Produkt hinzufügen</button>
             </div>
 

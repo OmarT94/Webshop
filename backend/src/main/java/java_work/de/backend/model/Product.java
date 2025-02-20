@@ -13,7 +13,8 @@ public record Product(
         String description,
         Double price,
         Integer stock,
-        List<String> images // Bild als Base64 speichern
+        List<String> images, // Bild als Base64 speichern
+        String category
 )
 {
 

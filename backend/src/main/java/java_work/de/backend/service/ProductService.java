@@ -38,7 +38,8 @@ private final ProductRepository productRepo;
                 productDTO.description(),
                 productDTO.price(),
                 productDTO.stock(),
-                productDTO.images() //Hier wird das Base64-Bild gespeichert
+                productDTO.images(), //Hier wird das Base64-Bild gespeichert
+                productDTO.category()
         );
 
         Product savedProduct = productRepo.save(newProduct);
@@ -58,7 +59,8 @@ private final ProductRepository productRepo;
                 productDTO.description(),
                 productDTO.price(),
                 productDTO.stock(),
-                productDTO.images()
+                productDTO.images(),
+                productDTO.category()
         );
 
          Product saveProduct = productRepo.save(updatedProduct);
@@ -94,7 +96,8 @@ private final ProductRepository productRepo;
                 product.description(),
                 product.price(),
                 product.stock(),
-                product.images() //  Sende das Bild zurück ans Frontend
+                product.images(), //  Sende das Bild zurück ans Frontend
+                product.category()
         );
     }
 
