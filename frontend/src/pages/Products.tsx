@@ -71,7 +71,7 @@ export default function Products() {
                                 onClick={() => addItem(token!, userEmail!, {
                                     productId: product.id,
                                     name: product.name,
-                                    images: productImages, // Korrekt: Übergibt `images`, nicht `imageBase64`
+                                    images: productImages,
                                     quantity: 1,
                                     price: product.price
                                 })}

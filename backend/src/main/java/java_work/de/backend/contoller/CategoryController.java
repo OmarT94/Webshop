@@ -2,7 +2,6 @@ package java_work.de.backend.contoller;
 
 import jakarta.validation.Valid;
 import java_work.de.backend.dto.CategoryDTO;
-import java_work.de.backend.model.Category;
 import java_work.de.backend.service.CategoryServic;
 
 import org.springframework.http.HttpStatus;

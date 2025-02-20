@@ -87,7 +87,10 @@ private final CategoryRepository categoryRepo;
 
     //  Suche nach Beschreibung (Kategorie)
     public List<Product> searchByCategory(String category) {
-        return productRepo.findByCategoryContainingIgnoreCase(category);
+        System.out.println("Gesuchte Kategorie: " + category); // Debugging
+        List<Product> products = productRepo.findByCategoryContainingIgnoreCase(category);
+        System.out.println("Gefundene Produkte: " + products); // Debugging
+        return products;
     }
 
     //  Suche nach Preisbereich

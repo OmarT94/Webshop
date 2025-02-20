@@ -3,34 +3,41 @@ import {
     getProductsByName,
     getProductsByPrice,
     getProducts,
-    getProductsByCategory
+    getProductsByCategory, Product
 } from "../api/products";
+import {useAuthStore} from "../store/authStore.ts";
+import {useCartStore} from "../store/cartStore.ts";
+
 
 export default function ProductSearch() {
+    const { token } = useAuthStore();
+    const userEmail = useAuthStore((state) => state.tokenEmail);
+    const { addItem } = useCartStore();
     const [name, setName] = useState("");
     const [category, setCategory] = useState("");
     const [minPrice, setMinPrice] = useState("0");
     const [maxPrice, setMaxPrice] = useState("");
-    const [products, setProducts] = useState<any[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
 
     useEffect(() => {
         document.title = "Produktsuche";
     }, []);
 
-    const loadAllProducts = async () => {
-        try {
+    useEffect(() => {
+        async function fetchData() {
             const data = await getProducts();
             setProducts(data);
-        } catch (error) {
-            console.error("Fehler beim Laden aller Produkte:", error);
         }
-    };
+        fetchData();
+    }, []);
 
     const handleNameSearch = async () => {
         if (!name.trim()) return;
         try {
             const data = await getProductsByName(name);
-            setProducts(data);
+            console.log("API-Antwort für Name-Suche:", data); // Debugging
+            setProducts([...new Map((data as Product[]).map(item => [item.id, item])).values()]);
+
         } catch (error) {
             console.error("Fehler beim Laden der Produkte nach Name:", error);
         }
@@ -39,8 +46,11 @@ export default function ProductSearch() {
     const handleCategorySearch = async () => {
         if (!category.trim()) return;
         try {
+            console.log("Gesendete Kategorie:", category); // Debugging
             const data = await getProductsByCategory(category);
-            setProducts(data);
+            console.log("API-Antwort für Kategorie-Suche:", data); // Debugging
+            setProducts([...new Map((data as Product[]).map(item => [item.id, item])).values()]);
+
         } catch (error) {
             console.error("Fehler beim Laden der Produkte nach Kategorie:", error);
         }
@@ -51,7 +61,8 @@ export default function ProductSearch() {
         const max = parseFloat(maxPrice) || 100000; // Standard max, falls leer
         try {
             const data = await getProductsByPrice(min, max);
-            setProducts(data);
+            console.log("API-Antwort für Preis-Suche:", data); // Debugging
+            setProducts([...new Map((data as Product[]).map(item => [item.id, item])).values()]);
         } catch (error) {
             console.error("Fehler beim Laden der Produkte nach Preis:", error);
         }
@@ -89,7 +100,7 @@ export default function ProductSearch() {
                     }
                 } else {
                     // Wenn alle Filter leer sind, lade alle Produkte
-                    loadAllProducts();
+
                 }
             };
 
@@ -175,6 +186,31 @@ export default function ProductSearch() {
                                     <p className="product-name">{product.name}</p>
                                     <p className="product-description">{product.description}</p>
                                     <p className="product-price">{product.price}€</p>
+
+                                    {/* 🛒 Button zum Warenkorb hinzufügen */}
+                                    <button
+                                        onClick={() => {
+                                            console.log("🛒 Produkt zum Warenkorb hinzufügen:", {
+                                                productId: product.id,
+                                                name: product.name,
+                                                images: product.images,
+                                                quantity: 1,
+                                                price: product.price
+                                            });
+
+                                            addItem(token!, userEmail!, {
+                                                productId: product.id,
+                                                name: product.name,
+                                                images: product.images,
+                                                quantity: 1,
+                                                price: product.price
+                                            });
+                                        }}
+                                        className="add-to-cart-button"
+                                    >
+                                        🛒 In den Warenkorb
+                                    </button>
+
                                 </div>
                             </li>
                         ))
@@ -182,6 +218,7 @@ export default function ProductSearch() {
                         <p className="Search-HomePage-NoResults">Keine Produkte gefunden</p>
                     )}
                 </ul>
+
             </div>
         </div>
     );

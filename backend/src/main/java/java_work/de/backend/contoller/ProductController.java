@@ -59,6 +59,7 @@ public class ProductController {
     //  Suche nach Kategorie
     @GetMapping("/search/category")
     public List<Product> searchByCategory(@RequestParam String category) {
+        System.out.println("API-Anfrage für Kategorie: " + category); // Debugging
         return productService.searchByCategory(category);
     }
 
