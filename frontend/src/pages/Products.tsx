@@ -8,6 +8,9 @@ export default function Products() {
     const { token } = useAuthStore();
     const userEmail = useAuthStore((state) => state.tokenEmail);
     const { addItem } = useCartStore();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [currentProductImages, setCurrentProductImages] = useState<string[]>([]);
 
     useEffect(() => {
         async function fetchData() {
@@ -17,18 +20,22 @@ export default function Products() {
         fetchData();
     }, []);
 
-    //  Funktion zur Erstellung einer Blob-URL für das Bild
-    const openImageInNewTab = (base64String: string) => {
-        if (!base64String) return;
-        const byteCharacters = atob(base64String.split(",")[1]);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: "image/png" });
-        const blobUrl = URL.createObjectURL(blob);
-        window.open(blobUrl, "_blank");
+    const openImageInModal = (images: string[], index: number) => {
+        setCurrentProductImages(images);
+        setCurrentImageIndex(index);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const goToNextImage = () => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % currentProductImages.length);
+    };
+
+    const goToPreviousImage = () => {
+        setCurrentImageIndex((prevIndex) => (prevIndex - 1 + currentProductImages.length) % currentProductImages.length);
     };
 
     return (
@@ -45,7 +52,7 @@ export default function Products() {
                                     src={productImages[0]}
                                     alt={product.name}
                                     className="product-image"
-                                    onClick={() => openImageInNewTab(productImages[0])}
+                                    onClick={() => openImageInModal(productImages, 0)}
                                 />
                             ) : (
                                 <p className="no-image-text">Kein Bild verfügbar</p>
@@ -59,7 +66,7 @@ export default function Products() {
                                         src={image}
                                         alt={`${product.name} Bild ${index + 1}`}
                                         className="product-thumbnail"
-                                        onClick={() => openImageInNewTab(image)}
+                                        onClick={() => openImageInModal(productImages, index)}
                                     />
                                 ))}
                             </div>
@@ -83,6 +90,26 @@ export default function Products() {
                     );
                 })}
             </div>
+
+            {/* Modal für die Bildergalerie */}
+            {isModalOpen && (
+                <div className="modal-overlay" onClick={closeModal}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="close-modal-button" onClick={closeModal}>×</button>
+                        <div className="modal-image-container">
+                            <img
+                                src={currentProductImages[currentImageIndex]}
+                                alt={`Bild ${currentImageIndex + 1}`}
+                                className="modal-image"
+                            />
+                        </div>
+                        <div className="modal-navigation">
+                            <button onClick={goToPreviousImage}>←</button>
+                            <button onClick={goToNextImage}>→</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -303,6 +303,7 @@ footer p {
     flex-wrap: wrap;
   }
 }
+
 /* Bestellungen verwalten & suchen ADMIN */
 .admin-orders {
   padding: 2rem;
@@ -311,6 +312,7 @@ footer p {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   min-height: 100vh;
+  padding-bottom: 50px;
 }
 
 .admin-orders h2 {
@@ -321,7 +323,7 @@ footer p {
   color: #333;
 }
 
-.search-container {
+.search-container-admin {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -329,7 +331,7 @@ footer p {
   justify-content: center;
 }
 
-.search-container input {
+.search-container-admin input {
   padding: 0.75rem;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -338,12 +340,12 @@ footer p {
   transition: border-color 0.3s ease;
 }
 
-.search-container input:focus {
+.search-container-admin input:focus {
   border-color: #007bff;
   outline: none;
 }
 
-.search-container button {
+.search-container-admin button {
   background-color: #007bff;
   color: white;
   padding: 0.75rem 1.5rem;
@@ -354,7 +356,7 @@ footer p {
   transition: background-color 0.3s ease;
 }
 
-.search-container button:hover {
+.search-container-admin button:hover {
   background-color: #0056b3;
 }
 
@@ -845,20 +847,20 @@ footer p {
   color: #666;
 }
 
-/*/////////////////////// Allgemeines Styling für die Produktübersicht ////////////////////////////////////////////////////*/
+/*/////////////////////////////// Allgemeines Styling für die Produktübersicht ///////////////////////////////////////*/
+
 .products-container {
-  padding: 20px;
+  padding: 1.25rem; /* 20px */
   display: flex;
   flex-direction: column;
   align-items: center;
-
 }
 
 .products-title {
-  font-size: 28px;
+  font-size: 1.75rem; /* 28px */
   font-weight: bold;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem; /* 20px */
   color: #333;
 }
 
@@ -866,12 +868,13 @@ footer p {
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* Flexibles Layout */
-  gap: 20px;
+  gap: 1.25rem; /* 20px */
   justify-content: center;
   width: 100%;
   max-width: 1700px;
-  padding-bottom: 50px;
+  padding-bottom: 3.125rem; /* 50px */
 }
+
 .products-grid.single-product {
   justify-content: center; /* Zentriert den einzelnen Artikel */
   width: 50%;
@@ -882,7 +885,7 @@ footer p {
   border: 1px solid #ddd;
   border-radius: 10px;
   background-color: #ffffff;
-  padding: 20px;
+  padding: 1.25rem; /* 20px */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -898,10 +901,11 @@ footer p {
   height: 300px;
   object-fit: cover;
   border-radius: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem; /* 10px */
   cursor: pointer;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
+
 .product-image:hover {
   transform: scale(1.05);
   opacity: 0.8;
@@ -909,33 +913,33 @@ footer p {
 
 /* Produktinformationen */
 .product-name {
-  font-size: 18px;
+  font-size: 1.125rem; /* 18px */
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 0.3125rem; /* 5px */
 }
 
 .product-description-home {
-  font-size: 14px;
+  font-size: 0.875rem; /* 14px */
   color: #666;
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem; /* 10px */
 }
 
 .product-price {
-  font-size: 18px;
+  font-size: 1.125rem; /* 18px */
   font-weight: bold;
   color: #27ae60;
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem; /* 10px */
 }
 
 /* In den Warenkorb Button */
 .add-to-cart-button {
   background-color: #007bff;
   color: white;
-  padding: 10px;
+  padding: 0.625rem; /* 10px */
   border: none;
   cursor: pointer;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 0.875rem; /* 14px */
   font-weight: bold;
   transition: background 0.3s ease;
 }
@@ -957,8 +961,144 @@ footer p {
   }
 }
 
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8); /* Dunkler Hintergrund */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Über allem anderen */
+}
 
-/*  Warenkorb-Container */
+/* Modal Content */
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 1.25rem; /* 20px */
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Schließen-Button */
+.close-modal-button {
+  position: absolute;
+  top: 0.625rem; /* 10px */
+  right: 0.625rem; /* 10px */
+  background: none;
+  border: none;
+  font-size: 1.5rem; /* 24px */
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close-modal-button:hover {
+  color: #ff0000; /* Rot beim Hover */
+}
+
+/* Modal Bild */
+.modal-image {
+  max-width: 100%;
+  max-height: 80vh; /* Begrenzt die Höhe des Bildes */
+  border-radius: 8px;
+  margin-bottom: 0.625rem; /* 10px */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal Navigation (Vorheriges/Nächstes Bild) */
+.modal-navigation {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 0.625rem; /* 10px */
+}
+
+.modal-navigation button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.625rem 1.25rem; /* 10px 20px */
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem; /* 16px */
+  transition: background-color 0.3s ease;
+}
+
+.modal-navigation button:hover {
+  background-color: #0056b3;
+}
+
+/* Kein Bild verfügbar Text */
+.no-image-text {
+  font-size: 1rem; /* 16px */
+  color: #666;
+  text-align: center;
+  margin: 1.25rem 0; /* 20px */
+}
+
+/* Produkt-Galerie (Thumbnails) */
+.product-gallery {
+  display: flex;
+  gap: 0.625rem; /* 10px */
+  margin-top: 0.625rem; /* 10px */
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.product-thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.product-thumbnail:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+/* Responsive Anpassungen für das Modal */
+@media (max-width: 600px) {
+  .modal-content {
+    padding: 0.625rem; /* 10px */
+  }
+
+  .modal-image {
+    max-height: 60vh;
+  }
+
+  .modal-navigation button {
+    padding: 0.5rem 1rem; /* 8px 16px */
+    font-size: 0.875rem; /* 14px */
+  }
+
+  .product-thumbnail {
+    width: 60px;
+    height: 45px;
+  }
+}
+
+@media (max-width: 400px) {
+  .product-thumbnail {
+    width: 50px;
+    height: 40px;
+  }
+}
+
+
+/*/////////////////////////////////////////  Warenkorb-Container ///////////////////////////////////////////////////*/
 .cart-container {
   padding: 20px;
   max-width: 900px;

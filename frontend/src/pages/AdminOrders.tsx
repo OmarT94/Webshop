@@ -91,7 +91,7 @@ export default function AdminOrders() {
             <h2>🛒 Bestellungen verwalten & suchen</h2>
 
             {/* 🔍 Suchfelder */}
-            <div className="search-container">
+            <div className="search-container-admin">
                 <input type="text" placeholder="Benutzer-E-Mail" value={email} onChange={(e) => setEmail(e.target.value)} />
                 <input type="text" placeholder="Bestellstatus" value={status} onChange={(e) => setStatus(e.target.value)} />
                 <input type="text" placeholder="Zahlungsstatus" value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value)} />
